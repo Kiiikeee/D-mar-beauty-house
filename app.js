@@ -22,6 +22,12 @@ const permanenteRef = collection(db, "historial_permanente");
 const comisionesRef = collection(db, "comisiones_estilistas");
 const recibosRef = collection(db, "recibos_historial");
 
+// FUNCIÓN AUXILIAR FORMATO DE MILES (Q1,250.00)
+function formatearQ(monto) {
+    const val = parseFloat(monto) || 0;
+    return 'Q' + val.toLocaleString('es-GT', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+}
+
 // CACHÉ Y ESTADO FICHA
 let listaProductosCache = [];
 let listaServiciosCache = [];
@@ -104,7 +110,7 @@ window.toggleCamposAbonoPOS = () => {
             divOption.innerHTML = `
                 <input type="checkbox" id="chk-pendiente-${index}" data-index="${index}" style="width: auto; cursor: pointer;" onchange="alCambiarCheckboxPendientePOS()">
                 <label for="chk-pendiente-${index}" style="cursor: pointer; font-weight: 500;">
-                    ${item.nombre} - <span style="color:#81c784; font-weight:bold;">Q${item.subtotal.toFixed(2)}</span>
+                    ${item.nombre} - <span style="color:#81c784; font-weight:bold;">${formatearQ(item.subtotal)}</span>
                 </label>
             `;
             listaCheckboxes.appendChild(divOption);
@@ -134,7 +140,7 @@ window.alCambiarCheckboxPendientePOS = () => {
     });
 
     const abonoSugerido = Math.max(0, totalTicket - sumaPendiente);
-    document.getElementById('pos-monto-abono').value = abonoSugerido.toFixed(2);
+    document.getElementById('pos-monto-abono').value = abonoSugerido > 0 ? abonoSugerido.toFixed(2) : '';
     actualizarSumaDinamicaPOS();
 };
 
@@ -153,9 +159,9 @@ window.actualizarSumaDinamicaPOS = () => {
 
     const saldoDeuda = Math.max(0, totalTicket - abonoVal);
 
-    document.getElementById('pos-total-monto').textContent = `Q${totalTicket.toFixed(2)}`;
-    document.getElementById('pos-cobro-hoy-monto').textContent = `Q${abonoVal.toFixed(2)}`;
-    document.getElementById('pos-deuda-monto').textContent = `Q${saldoDeuda.toFixed(2)}`;
+    document.getElementById('pos-total-monto').textContent = formatearQ(totalTicket);
+    document.getElementById('pos-cobro-hoy-monto').textContent = formatearQ(abonoVal);
+    document.getElementById('pos-deuda-monto').textContent = formatearQ(saldoDeuda);
 };
 
 // NAVEGACIÓN Y CAMBIO DINÁMICO DE COLORES
@@ -226,7 +232,7 @@ window.abrirModalAgregarServicioPOS = () => {
     datalistServ.innerHTML = '';
     listaServiciosCache.forEach(s => {
         const opt = document.createElement('option');
-        opt.value = `${s.nombre.toUpperCase()} - Q${parseFloat(s.precio).toFixed(2)}`;
+        opt.value = `${s.nombre.toUpperCase()} - ${formatearQ(s.precio)}`;
         datalistServ.appendChild(opt);
     });
 
@@ -240,7 +246,7 @@ window.abrirModalAgregarServicioPOS = () => {
 
 document.getElementById('pos-input-servicio').addEventListener('input', (e) => {
     const texto = e.target.value.trim().toUpperCase();
-    const encontrado = listaServiciosCache.find(s => `${s.nombre.toUpperCase()} - Q${parseFloat(s.precio).toFixed(2)}` === texto || s.nombre.toUpperCase() === texto);
+    const encontrado = listaServiciosCache.find(s => `${s.nombre.toUpperCase()} - ${formatearQ(s.precio)}` === texto || s.nombre.toUpperCase() === texto);
     
     if (encontrado) {
         document.getElementById('pos-item-precio-serv').value = encontrado.precio;
@@ -254,7 +260,7 @@ document.getElementById('form-pos-servicio').addEventListener('submit', (e) => {
     const textoInput = document.getElementById('pos-input-servicio').value.trim().toUpperCase();
     if (!textoInput) return;
 
-    let servicioSeleccionado = listaServiciosCache.find(s => `${s.nombre.toUpperCase()} - Q${parseFloat(s.precio).toFixed(2)}` === textoInput || s.nombre.toUpperCase() === textoInput);
+    let servicioSeleccionado = listaServiciosCache.find(s => `${s.nombre.toUpperCase()} - ${formatearQ(s.precio)}` === textoInput || s.nombre.toUpperCase() === textoInput);
 
     const nombreServ = servicioSeleccionado ? servicioSeleccionado.nombre.toUpperCase() : textoInput.split('-')[0].trim();
     const estilista = document.getElementById('pos-item-estilista').value.trim().toUpperCase() || 'GENERAL';
@@ -285,7 +291,7 @@ window.abrirModalAgregarProductoPOS = () => {
     listaProductosCache.forEach(p => {
         if (p.stock > 0) {
             const opt = document.createElement('option');
-            opt.value = `${p.nombre.toUpperCase()} - Stock: ${p.stock} - Q${parseFloat(p.precio).toFixed(2)}`;
+            opt.value = `${p.nombre.toUpperCase()} - Stock: ${p.stock} - ${formatearQ(p.precio)}`;
             datalistProd.appendChild(opt);
         }
     });
@@ -298,7 +304,7 @@ window.abrirModalAgregarProductoPOS = () => {
 
 document.getElementById('pos-input-producto').addEventListener('input', (e) => {
     const texto = e.target.value.trim().toUpperCase();
-    const encontrado = listaProductosCache.find(p => `${p.nombre.toUpperCase()} - Stock: ${p.stock} - Q${parseFloat(p.precio).toFixed(2)}` === texto || p.nombre.toUpperCase() === texto);
+    const encontrado = listaProductosCache.find(p => `${p.nombre.toUpperCase()} - Stock: ${p.stock} - ${formatearQ(p.precio)}` === texto || p.nombre.toUpperCase() === texto);
     
     if (encontrado) {
         document.getElementById('pos-item-precio-prod').value = encontrado.precio;
@@ -312,7 +318,7 @@ document.getElementById('form-pos-producto').addEventListener('submit', (e) => {
     const textoInput = document.getElementById('pos-input-producto').value.trim().toUpperCase();
     if (!textoInput) return;
 
-    let prodSeleccionado = listaProductosCache.find(p => `${p.nombre.toUpperCase()} - Stock: ${p.stock} - Q${parseFloat(p.precio).toFixed(2)}` === textoInput || p.nombre.toUpperCase() === textoInput);
+    let prodSeleccionado = listaProductosCache.find(p => `${p.nombre.toUpperCase()} - Stock: ${p.stock} - ${formatearQ(p.precio)}` === textoInput || p.nombre.toUpperCase() === textoInput);
 
     const cant = parseInt(document.getElementById('pos-item-cant-prod').value) || 1;
 
@@ -359,8 +365,8 @@ function renderizarTicketPOS() {
             <td><strong>${item.nombre}</strong></td>
             <td>${item.estilista}</td>
             <td style="text-align: center;">${item.cantidad}</td>
-            <td style="text-align: center;">Q${item.precioUnitario.toFixed(2)}</td>
-            <td style="text-align: center; font-weight: bold;">Q${item.subtotal.toFixed(2)}</td>
+            <td style="text-align: center;">${formatearQ(item.precioUnitario)}</td>
+            <td style="text-align: center; font-weight: bold;">${formatearQ(item.subtotal)}</td>
             <td style="text-align: center;"><button onclick="quitarItemTicketPOS(${index})" style="background:#c62828; color:white; border:none; border-radius:4px; padding:3px 8px; cursor:pointer; font-size:11px;">✕</button></td>
         `;
         tablaPosItems.appendChild(fila);
@@ -505,9 +511,9 @@ window.confirmarYGuardarReciboPOS = async () => {
         renderizarTicketPOS();
 
         if (saldoPendienteCalc > 0) {
-            mostrarNotificacion(`⚠️ Comprobante ${numRecibo} guardado. Deuda de Q${saldoPendienteCalc.toFixed(2)} asignada en Cuentas por Cobrar.`, 'exito');
+            mostrarNotificacion(`⚠️ Comprobante ${numRecibo} guardado. Deuda de ${formatearQ(saldoPendienteCalc)} asignada en Cuentas por Cobrar.`, 'exito');
         } else {
-            mostrarNotificacion(`✨ Comprobante ${numRecibo} guardado. Total General: Q${totalTicket.toFixed(2)}`, 'exito');
+            mostrarNotificacion(`✨ Comprobante ${numRecibo} guardado. Total General: ${formatearQ(totalTicket)}`, 'exito');
         }
     } catch (error) {
         mostrarNotificacion('❌ Error al guardar el comprobante.', 'error');
@@ -541,7 +547,7 @@ function renderizarPagos() {
 
         let desgloseHTML = '<small style="color:#aaa;">Sin especificación</small>';
         if (p.itemsPendientes && Array.isArray(p.itemsPendientes) && p.itemsPendientes.length > 0) {
-            const itemsList = p.itemsPendientes.map(it => `· ${it.nombre || it} (${it.monto ? 'Q' + parseFloat(it.monto).toFixed(2) : ''})`).join('<br>');
+            const itemsList = p.itemsPendientes.map(it => `· ${it.nombre || it} (${it.monto ? formatearQ(it.monto) : ''})`).join('<br>');
             desgloseHTML = `
                 <details style="cursor:pointer;">
                     <summary style="color:var(--accent-color); font-weight:bold; outline:none; list-style:none;">
@@ -558,9 +564,9 @@ function renderizarPagos() {
             <td><strong>${p.cliente.toUpperCase()}</strong></td>
             <td><small>${p.fecha || ''}</small></td>
             <td>${desgloseHTML}</td>
-            <td style="text-align: center; font-weight:bold;">Q${parseFloat(p.montoTotal || 0).toFixed(2)}</td>
-            <td style="text-align: center; color:#81c784;">Q${parseFloat(p.montoPagado || 0).toFixed(2)}</td>
-            <td style="text-align: center; color:#ef5350; font-weight:bold;">Q${parseFloat(p.saldoPendiente || 0).toFixed(2)}</td>
+            <td style="text-align: center; font-weight:bold;">${formatearQ(p.montoTotal)}</td>
+            <td style="text-align: center; color:#81c784;">${formatearQ(p.montoPagado)}</td>
+            <td style="text-align: center; color:#ef5350; font-weight:bold;">${formatearQ(p.saldoPendiente)}</td>
             <td style="text-align: center;">${estadoBadge}</td>
             <td style="text-align: center;">
                 ${p.saldoPendiente > 0 ? `<button onclick="abrirModalAbono('${p.id}', '${p.cliente}', ${p.saldoPendiente},${p.montoPagado})" style="background:#2e7d32; color:white; border:none; padding:4px 8px; border-radius:4px; cursor:pointer; font-size:11px;">💵 Abonar</button>` : ''}
@@ -574,7 +580,7 @@ document.getElementById('buscador-pagos').addEventListener('input', renderizarPa
 
 window.abrirModalAbono = (id, cliente, saldo, pagado) => {
     document.getElementById('abono-pago-id').value = id;
-    document.getElementById('abono-cliente-nombre').textContent = `Clienta: ${cliente.toUpperCase()} | Saldo Pendiente: Q${parseFloat(saldo).toFixed(2)}`;
+    document.getElementById('abono-cliente-nombre').textContent = `Clienta: ${cliente.toUpperCase()} | Saldo Pendiente: ${formatearQ(saldo)}`;
     document.getElementById('abono-monto-ingresado').value = '';
     document.getElementById('modal-abono').style.display = 'flex';
 };
@@ -629,7 +635,7 @@ document.getElementById('form-abono').addEventListener('submit', async (e) => {
         await addDoc(permanenteRef, abonoTransaccion);
 
         cerrarModalAbono();
-        mostrarNotificacion(`💵 Abono de Q${monto.toFixed(2)} registrado exitosamente.`, 'exito');
+        mostrarNotificacion(`💵 Abono de ${formatearQ(monto)} registrado exitosamente.`, 'exito');
     } catch (err) {
         mostrarNotificacion('❌ Error al registrar el abono.', 'error');
     }
@@ -663,7 +669,7 @@ function renderizarRecibosHistorial() {
     filtrados.forEach(rec => {
         const fila = document.createElement('tr');
         const resumenItems = (rec.items || []).map(i => `${i.nombre} (${i.cantidad})`).join(', ');
-        const estadoBadge = rec.saldoPendiente > 0 ? `<span style="background:rgba(239,83,80,0.2); color:#ef5350; padding:2px 8px; border-radius:4px; font-weight:bold; font-size:11px;">DEUDA: Q${rec.saldoPendiente.toFixed(2)}</span>` : `<span style="background:rgba(129,199,132,0.2); color:#81c784; padding:2px 8px; border-radius:4px; font-weight:bold; font-size:11px;">PAGADO</span>`;
+        const estadoBadge = rec.saldoPendiente > 0 ? `<span style="background:rgba(239,83,80,0.2); color:#ef5350; padding:2px 8px; border-radius:4px; font-weight:bold; font-size:11px;">DEUDA: ${formatearQ(rec.saldoPendiente)}</span>` : `<span style="background:rgba(129,199,132,0.2); color:#81c784; padding:2px 8px; border-radius:4px; font-weight:bold; font-size:11px;">PAGADO</span>`;
 
         fila.innerHTML = `
             <td><strong style="color: var(--accent-color);">${rec.numRecibo || 'S/N'}</strong></td>
@@ -671,7 +677,7 @@ function renderizarRecibosHistorial() {
             <td><strong>${(rec.cliente || 'CLIENTE GENERAL').toUpperCase()}</strong></td>
             <td><small style="color: var(--text-muted);">${resumenItems}</small></td>
             <td style="text-align: center;"><small style="background:rgba(255,255,255,0.05); padding:2px 6px; border-radius:4px;">${rec.metodo || 'Efectivo'}</small></td>
-            <td style="text-align: center; font-weight: bold; color: #81c784;">Q${parseFloat(rec.total || 0).toFixed(2)}</td>
+            <td style="text-align: center; font-weight: bold; color: #81c784;">${formatearQ(rec.total)}</td>
             <td style="text-align: center;">${estadoBadge}</td>
             <td style="text-align: center;">
                 <div style="display: flex; gap: 4px; justify-content: center;">
@@ -702,12 +708,12 @@ window.verDetalleRecibo = (idRecibo) => {
             <td><small>${item.tipo}</small></td>
             <td><strong>${item.nombre}</strong></td>
             <td>${item.estilista || 'N/A'}</td>
-            <td style="text-align: center;">Q${parseFloat(item.subtotal).toFixed(2)}</td>
+            <td style="text-align: center;">${formatearQ(item.subtotal)}</td>
         `;
         tablaItems.appendChild(fila);
     });
 
-    document.getElementById('ver-recibo-total').textContent = `Q${parseFloat(rec.total).toFixed(2)}`;
+    document.getElementById('ver-recibo-total').textContent = formatearQ(rec.total);
     document.getElementById('btn-reimprimir-recibo').onclick = () => generarPDFReciboIndividual(rec);
     document.getElementById('modal-ver-recibo').style.display = 'flex';
 };
@@ -757,8 +763,8 @@ function generarPDFReciboIndividual(recibo) {
         i.nombre,
         i.estilista || 'N/A',
         i.cantidad,
-        `Q${parseFloat(i.precioUnitario).toFixed(2)}`,
-        `Q${parseFloat(i.subtotal).toFixed(2)}`
+        formatearQ(i.precioUnitario),
+        formatearQ(i.subtotal)
     ]);
 
     docPdf.autoTable({
@@ -771,11 +777,11 @@ function generarPDFReciboIndividual(recibo) {
 
     const finalY = docPdf.lastAutoTable.finalY + 10;
     docPdf.setFontSize(12);
-    docPdf.text(`SUMA GENERAL: Q${parseFloat(recibo.total).toFixed(2)}`, 14, finalY);
+    docPdf.text(`SUMA GENERAL: ${formatearQ(recibo.total)}`, 14, finalY);
 
     if (recibo.saldoPendiente > 0) {
-        docPdf.text(`ABONADO: Q${parseFloat(recibo.abonoInicial).toFixed(2)}`, 14, finalY + 6);
-        docPdf.text(`SALDO PENDIENTE: Q${parseFloat(recibo.saldoPendiente).toFixed(2)}`, 14, finalY + 12);
+        docPdf.text(`ABONADO: ${formatearQ(recibo.abonoInicial)}`, 14, finalY + 6);
+        docPdf.text(`SALDO PENDIENTE: ${formatearQ(recibo.saldoPendiente)}`, 14, finalY + 12);
     }
 
     docPdf.save(`Comprobante_${recibo.numRecibo}_DMar.pdf`);
@@ -804,7 +810,7 @@ function renderizarProductos(productos) {
         fila.innerHTML = `
             <td><strong style="color: var(--accent-color);">${prod.codigo}</strong></td>
             <td><strong>${prod.nombre}</strong></td>
-            <td style="text-align: center;">Q${parseFloat(prod.precio).toFixed(2)}</td>
+            <td style="text-align: center;">${formatearQ(prod.precio)}</td>
             <td style="text-align: center;"><span class="stock-badge">${prod.stock}</span></td>
             <td style="text-align: center;">
                 <button onclick="abrirModalEdicion('${prod.id}', '${prod.codigo}', '${prod.nombre}', ${prod.precio}, ${prod.stock})" style="background:#555; color:white; border:none; padding:4px 8px; border-radius:4px;">Editar</button>
@@ -836,7 +842,7 @@ function renderizarServicios(servicios) {
         const fila = document.createElement('tr');
         fila.innerHTML = `
             <td><strong>${s.nombre}</strong></td>
-            <td style="text-align: center;">Q${parseFloat(s.precio).toFixed(2)}</td>
+            <td style="text-align: center;">${formatearQ(s.precio)}</td>
             <td style="text-align: center;">
                 <button onclick="abrirModalEdicionServicio('${s.id}', '${s.nombre}', ${s.precio})" style="background:#555; color:white; border:none; padding:4px 8px; border-radius:4px;">Editar</button>
             </td>
@@ -893,8 +899,8 @@ function renderizarControlEstilistas() {
         totalConteo += 1;
     });
 
-    document.getElementById('stat-estilistas-total-servicios').textContent = `Q${totalServiciosQ.toFixed(2)}`;
-    document.getElementById('stat-estilistas-total-comision').textContent = `Q${totalComisionQ.toFixed(2)}`;
+    document.getElementById('stat-estilistas-total-servicios').textContent = formatearQ(totalServiciosQ);
+    document.getElementById('stat-estilistas-total-comision').textContent = formatearQ(totalComisionQ);
     document.getElementById('stat-estilistas-conteo').textContent = totalConteo;
 
     contenedorResumen.innerHTML = '';
@@ -914,8 +920,8 @@ function renderizarControlEstilistas() {
         card.style.cssText = `background: rgba(255, 152, 0, 0.05); border: 1px solid var(--border-color); border-radius: 10px; padding: 15px;`;
         card.innerHTML = `
             <h3 style="color: var(--accent-color); font-size: 1.1rem;">✂️ ${est.nombre}</h3>
-            <p style="font-size: 0.85rem; color: var(--text-muted);">Servicios: <strong>${est.conteo}</strong> | Total: <strong>Q${est.totalGenerado.toFixed(2)}</strong></p>
-            <p style="font-size: 0.95rem; color: #ffb74d; font-weight: bold; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 5px; margin-top: 5px;">Comisión (30%): Q${est.totalComision.toFixed(2)}</p>
+            <p style="font-size: 0.85rem; color: var(--text-muted);">Servicios: <strong>${est.conteo}</strong> | Total: <strong>${formatearQ(est.totalGenerado)}</strong></p>
+            <p style="font-size: 0.95rem; color: #ffb74d; font-weight: bold; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 5px; margin-top: 5px;">Comisión (30%): ${formatearQ(est.totalComision)}</p>
         `;
         grid.appendChild(card);
 
@@ -928,8 +934,8 @@ function renderizarControlEstilistas() {
                 <td><strong style="color: var(--accent-color);">${est.nombre}</strong></td>
                 <td><strong>${(t.concepto || '').replace('SERVICIO: ', '')}</strong></td>
                 <td>${t.cliente.toUpperCase()}</td>
-                <td style="text-align: center;">Q${precioS.toFixed(2)}</td>
-                <td style="text-align: center;"><strong style="color: #ffb74d;">Q${comS.toFixed(2)}</strong></td>
+                <td style="text-align: center;">${formatearQ(precioS)}</td>
+                <td style="text-align: center;"><strong style="color: #ffb74d;">${formatearQ(comS)}</strong></td>
             `;
             tablaDetalles.appendChild(fila);
         });
@@ -979,8 +985,8 @@ function generarPDFComisionesEstilistas() {
             (t.estilista || 'N/A').toUpperCase(),
             (t.concepto || '').replace('SERVICIO: ', ''),
             (t.cliente || '').toUpperCase(),
-            `Q${p.toFixed(2)}`,
-            `Q${(p * 0.30).toFixed(2)}`
+            formatearQ(p),
+            formatearQ(p * 0.30)
         ];
     });
 
@@ -1054,7 +1060,7 @@ function renderizarHistorialPermanente() {
                 <td><strong>${(reg.concepto || '').toUpperCase()}</strong></td>
                 <td>${(reg.cliente || 'N/A').toUpperCase()}</td>
                 <td>${(reg.estilista || 'N/A').toUpperCase()}</td>
-                <td style="text-align: center; font-weight: bold; color:${esGasto ? '#ef5350' : '#81c784'};">${esGasto ? '-' : ''}Q${parseFloat(reg.monto || 0).toFixed(2)}</td>
+                <td style="text-align: center; font-weight: bold; color:${esGasto ? '#ef5350' : '#81c784'};">${esGasto ? '-' : ''}${formatearQ(reg.monto)}</td>
                 <td style="text-align: center;"><small>${reg.metodo || 'Efectivo'}</small></td>
             </tr>
         `;
@@ -1084,7 +1090,7 @@ function renderizarTablaCorrecciones() {
             <td><small>${reg.tipo || 'INGRESO'}</small></td>
             <td><strong>${(reg.concepto || '').toUpperCase()}</strong></td>
             <td>${(reg.cliente || 'N/A').toUpperCase()}</td>
-            <td style="text-align: center;">Q${parseFloat(reg.monto || 0).toFixed(2)}</td>
+            <td style="text-align: center;">${formatearQ(reg.monto)}</td>
             <td style="text-align: center;">
                 <button onclick="anularRegistroPorError('${reg.id}', '${reg.concepto.replace(/'/g, "\\'")}', '${reg.tipo}', ${reg.productoId ? `'${reg.productoId}'` : 'null'}, ${reg.cantidadVendida || 1}, ${reg.timestamp || 0}, ${reg.numRecibo ? `'${reg.numRecibo}'` : 'null'})" style="background-color: #c62828; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer; font-size: 11px;">🗑️ Anular Registro</button>
             </td>
@@ -1158,16 +1164,16 @@ function renderizarVentas(ventas) {
             <td><small>${v.fecha || ''}</small></td>
             <td><strong>${(v.concepto || '').toUpperCase()}</strong></td>
             <td>${(v.cliente || 'N/A').toUpperCase()}</td>
-            <td><strong style="color: ${v.tipo === 'GASTO' ? '#ef5350' : '#4CAF50'};">${v.tipo === 'GASTO' ? '-' : ''}Q${montoVal.toFixed(2)}</strong></td>
+            <td><strong style="color: ${v.tipo === 'GASTO' ? '#ef5350' : '#4CAF50'};">${v.tipo === 'GASTO' ? '-' : ''}${formatearQ(montoVal)}</strong></td>
             <td><small>${v.metodo || 'Efectivo'}</small></td>
         `;
         tablaVentasHistorial.appendChild(fila);
     });
 
-    document.getElementById('stat-total-ventas').textContent = `Q${totalIngresos.toFixed(2)}`;
-    document.getElementById('stat-efectivo').textContent = `Q${Math.max(0, totalEfectivo - totalGastos).toFixed(2)}`;
-    document.getElementById('stat-digital').textContent = `Q${totalDigital.toFixed(2)}`;
-    document.getElementById('stat-gastos').textContent = `Q${totalGastos.toFixed(2)}`;
+    document.getElementById('stat-total-ventas').textContent = formatearQ(totalIngresos);
+    document.getElementById('stat-efectivo').textContent = formatearQ(Math.max(0, totalEfectivo - totalGastos));
+    document.getElementById('stat-digital').textContent = formatearQ(totalDigital);
+    document.getElementById('stat-gastos').textContent = formatearQ(totalGastos);
 }
 
 window.procesarCierreCaja = () => {
@@ -1212,7 +1218,7 @@ function generarPDFCierreCajaDiario() {
             (v.concepto || '').toUpperCase(),
             (v.cliente || 'N/A').toUpperCase(),
             v.metodo || 'Efectivo',
-            `${v.tipo === 'GASTO' ? '-' : ''}Q${montoVal.toFixed(2)}`
+            `${v.tipo === 'GASTO' ? '-' : ''}${formatearQ(montoVal)}`
         ];
     });
 
@@ -1242,12 +1248,12 @@ function generarPDFCierreCajaDiario() {
     docPdf.text("RESUMEN GENERAL DE CAJA DIARIA:", 14, finalY);
 
     docPdf.setFont('helvetica', 'normal');
-    docPdf.text(`· Ingreso Total Bruto: Q${totalIngresos.toFixed(2)}`, 14, finalY + 6);
-    docPdf.text(`· Pagos Digitales / Transferencias: Q${totalDigital.toFixed(2)}`, 14, finalY + 12);
-    docPdf.text(`· Salidas / Gastos de Caja: Q${totalGastos.toFixed(2)}`, 14, finalY + 18);
+    docPdf.text(`· Ingreso Total Bruto: ${formatearQ(totalIngresos)}`, 14, finalY + 6);
+    docPdf.text(`· Pagos Digitales / Transferencias: ${formatearQ(totalDigital)}`, 14, finalY + 12);
+    docPdf.text(`· Salidas / Gastos de Caja: ${formatearQ(totalGastos)}`, 14, finalY + 18);
     
     docPdf.setFont('helvetica', 'bold');
-    docPdf.text(`· EFECTIVO NETO EN CAJA: Q${netoEfectivo.toFixed(2)}`, 14, finalY + 26);
+    docPdf.text(`· EFECTIVO NETO EN CAJA: ${formatearQ(netoEfectivo)}`, 14, finalY + 26);
 
     const fechaNombre = new Date().toISOString().slice(0, 10);
     docPdf.save(`Cierre_de_Caja_${fechaNombre}_DMar.pdf`);
@@ -1289,7 +1295,7 @@ document.getElementById('form-gasto').addEventListener('submit', async (e) => {
         await addDoc(ventasRef, gastoData);
         await addDoc(permanenteRef, gastoData);
         cerrarModalGasto();
-        mostrarNotificacion(`💸 Gasto de Q${monto.toFixed(2)} registrado.`, 'exito');
+        mostrarNotificacion(`💸 Gasto de ${formatearQ(monto)} registrado.`, 'exito');
     } catch (error) { mostrarNotificacion('❌ Error al registrar el gasto.', 'error'); }
 });
 
