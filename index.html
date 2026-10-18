@@ -52,7 +52,7 @@
             </button>
         </nav>
         <div class="sidebar-footer">
-            <p>D'Mar Beauty House © 2026 | <span style="color: var(--accent-color); font-weight: bold;">v1.4.2</span></p>
+            <p>D'Mar Beauty House © 2026 | <span style="color: var(--accent-color); font-weight: bold;">v1.5.0</span></p>
         </div>
     </aside>
 
@@ -126,6 +126,14 @@
                                     <option value="CREDITO">⚠️ Pendiente / Pago Parcial (Registrar Deuda)</option>
                                 </select>
                             </div>
+                            <div>
+                                <label style="font-size: 0.8rem; color: var(--text-muted); display: block; margin-bottom: 4px;">Método de Pago:</label>
+                                <select id="pos-metodo-pago">
+                                    <option value="Efectivo">💵 Efectivo</option>
+                                    <option value="Transferencia">🏦 Transferencia Bancaria</option>
+                                    <option value="Tarjeta">💳 Tarjeta de Crédito / Débito</option>
+                                </select>
+                            </div>
                             <div id="contenedor-pos-abono" style="display: none;">
                                 <label style="font-size: 0.8rem; color: var(--text-muted); display: block; margin-bottom: 4px;">Monto Abonado Hoy (Q):</label>
                                 <input type="number" step="0.01" id="pos-monto-abono" placeholder="0.00" oninput="actualizarSumaDinamicaPOS()">
@@ -176,6 +184,7 @@
                                 <th>Fecha y Hora</th>
                                 <th>Clienta</th>
                                 <th>Trabajos Realizados / Productos</th>
+                                <th style="text-align: center;">Método</th>
                                 <th style="text-align: center;">Suma General</th>
                                 <th style="text-align: center;">Estado Pago</th>
                                 <th style="text-align: center;">Acciones</th>
@@ -300,23 +309,6 @@
 
             <!-- SECCIÓN: CONTROL DE PAGOS Y CRÉDITOS -->
             <div id="seccion-pagos" class="app-section" style="display: none;">
-                <form id="form-pago" class="form-grid">
-                    <input type="text" id="nombre-cliente" placeholder="Nombre Completo de la Clienta" class="input-uppercase" list="historial-clientes-datalist" required autocomplete="off">
-                    <input type="number" step="0.01" id="total-credito" placeholder="Monto Total del Crédito (Q)" required>
-                    <input type="number" step="0.01" id="abono-inicial" placeholder="Abono Inicial (Q) [Opcional]">
-                    
-                    <div style="grid-column: 1 / -1;">
-                        <label style="font-size: 0.85rem; color: var(--text-muted); display: block; margin-bottom: 4px;">Método de Pago (Abono Inicial):</label>
-                        <select id="metodo-pago-credito">
-                            <option value="Efectivo">💵 Efectivo</option>
-                            <option value="Transferencia">🏦 Transferencia Bancaria</option>
-                            <option value="Tarjeta">💳 Tarjeta de Crédito / Débito</option>
-                        </select>
-                    </div>
-
-                    <button type="submit" class="btn-primary" style="background: linear-gradient(135deg, #1976D2, #115293); color: white;">➕ Registrar Crédito Manual</button>
-                </form>
-
                 <div class="section-header-flex">
                     <h2>Cuentas por Cobrar & Saldos Pendientes</h2>
                     <input type="text" id="buscador-pagos" placeholder="🔍 Buscar clienta..." class="search-input">
@@ -437,18 +429,18 @@
         <div class="modal-content" style="max-width: 520px;">
             <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 10px; margin-bottom: 15px;">
                 <h3 style="margin: 0; color: var(--accent-color);">🔔 Novedades & Versiones</h3>
-                <span style="background: var(--accent-color); color: #000; font-weight: bold; padding: 2px 8px; border-radius: 12px; font-size: 0.75rem;">v1.4.2</span>
+                <span style="background: var(--accent-color); color: #000; font-weight: bold; padding: 2px 8px; border-radius: 12px; font-size: 0.75rem;">v1.5.0</span>
             </div>
 
             <div style="max-height: 320px; overflow-y: auto; display: flex; flex-direction: column; gap: 15px; padding-right: 5px;">
                 <div style="background: rgba(255,255,255,0.03); border: 1px solid var(--border-color); border-radius: 8px; padding: 12px;">
                     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
-                        <strong style="color: #81c784; font-size: 0.95rem;">Versión 1.4.2 (Actual)</strong>
+                        <strong style="color: #81c784; font-size: 0.95rem;">Versión 1.5.0 (Actual)</strong>
                         <small style="color: var(--text-muted);">Octubre 2026</small>
                     </div>
                     <ul style="font-size: 0.83rem; color: var(--text-light); padding-left: 18px; line-height: 1.5;">
-                        <li><strong>Historial Permanente 100% Funcional</strong>: Visualización de todas las transacciones históricas guardadas en la base de datos de Firebase.</li>
-                        <li><strong>Corrección de descarga PDF</strong>: Soporte universal garantizado para jsPDF sin bloqueos de navegador.</li>
+                        <li><strong>Método de Pago en Ficha & Recibos</strong>: Integración de selección de método de pago (Efectivo, Tarjeta, Transferencia) en todos los comprobantes.</li>
+                        <li><strong>Reflejo en PDF de Comprobante & Caja</strong>: El método de pago seleccionado se muestra en las descargas de los comprobantes y desglosa el efectivo/digital en los reportes de caja.</li>
                     </ul>
                 </div>
             </div>
@@ -557,6 +549,32 @@
                 <div class="modal-actions">
                     <button type="button" class="btn-cancel" onclick="cerrarModalGasto()">Cancelar</button>
                     <button type="submit" class="btn-primary" style="background: linear-gradient(135deg, #e65100, #ef6c00); color: white;">Registrar Gasto</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL REGISTRAR ABONO A CUENTA -->
+    <div id="modal-abono" class="modal-overlay" style="display: none;">
+        <div class="modal-content">
+            <h3>Abonar a Saldo Pendiente</h3>
+            <p id="abono-cliente-nombre" style="color: var(--accent-color); font-weight: bold; margin-bottom: 10px;"></p>
+            <form id="form-abono">
+                <input type="hidden" id="abono-pago-id">
+                
+                <label>Monto del Abono (Q):</label>
+                <input type="number" step="0.01" id="abono-monto-ingresado" placeholder="0.00" required>
+
+                <label>Método de Pago:</label>
+                <select id="abono-metodo">
+                    <option value="Efectivo">💵 Efectivo</option>
+                    <option value="Transferencia">🏦 Transferencia Bancaria</option>
+                    <option value="Tarjeta">💳 Tarjeta de Crédito / Débito</option>
+                </select>
+
+                <div class="modal-actions">
+                    <button type="button" class="btn-cancel" onclick="cerrarModalAbono()">Cancelar</button>
+                    <button type="submit" class="btn-primary" style="background: linear-gradient(135deg, #2e7d32, #1b5e20); color: white;">Registrar Abono</button>
                 </div>
             </form>
         </div>

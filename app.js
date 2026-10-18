@@ -386,6 +386,7 @@ window.confirmarYGuardarReciboPOS = async () => {
 
     const clienteIngresado = document.getElementById('pos-cliente').value.trim();
     const cliente = clienteIngresado ? clienteIngresado.toUpperCase() : 'CLIENTE GENERAL';
+    const metodoPagoSeleccionado = document.getElementById('pos-metodo-pago').value;
     const ahora = new Date();
     const fechaStr = ahora.toLocaleDateString() + ' ' + ahora.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
     const mesAnioStr = ahora.toLocaleDateString('es-ES', { month: 'long', year: 'numeric' }).toUpperCase();
@@ -425,6 +426,7 @@ window.confirmarYGuardarReciboPOS = async () => {
     const reciboData = {
         numRecibo: numRecibo,
         cliente: cliente,
+        metodo: metodoPagoSeleccionado,
         total: totalTicket,
         abonoInicial: abonoHoy,
         saldoPendiente: saldoPendienteCalc,
@@ -455,7 +457,7 @@ window.confirmarYGuardarReciboPOS = async () => {
                 mesAnio: mesAnioStr,
                 timestamp: timestampUni,
                 estado: 'PENDIENTE',
-                historialAbonos: abonoHoy > 0 ? [{ fecha: fechaStr, monto: abonoHoy, metodo: 'Efectivo' }] : []
+                historialAbonos: abonoHoy > 0 ? [{ fecha: fechaStr, monto: abonoHoy, metodo: metodoPagoSeleccionado }] : []
             });
         }
 
@@ -474,7 +476,7 @@ window.confirmarYGuardarReciboPOS = async () => {
                 monto: montoParaCaja,
                 precioTotal: item.subtotal,
                 comision: item.comision,
-                metodo: 'Efectivo',
+                metodo: metodoPagoSeleccionado,
                 fecha: fechaStr,
                 mesAnio: mesAnioStr,
                 timestamp: timestampUni
@@ -498,6 +500,7 @@ window.confirmarYGuardarReciboPOS = async () => {
         ticketPOSActual = { idReciboExistente: null, items: [] };
         document.getElementById('pos-cliente').value = '';
         document.getElementById('pos-estado-pago').value = 'COMPLETO';
+        document.getElementById('pos-metodo-pago').value = 'Efectivo';
         toggleCamposAbonoPOS();
         renderizarTicketPOS();
 
@@ -569,6 +572,69 @@ function renderizarPagos() {
 
 document.getElementById('buscador-pagos').addEventListener('input', renderizarPagos);
 
+window.abrirModalAbono = (id, cliente, saldo, pagado) => {
+    document.getElementById('abono-pago-id').value = id;
+    document.getElementById('abono-cliente-nombre').textContent = `Clienta: ${cliente.toUpperCase()} | Saldo Pendiente: Q${parseFloat(saldo).toFixed(2)}`;
+    document.getElementById('abono-monto-ingresado').value = '';
+    document.getElementById('modal-abono').style.display = 'flex';
+};
+
+window.cerrarModalAbono = () => { document.getElementById('modal-abono').style.display = 'none'; };
+
+document.getElementById('form-abono').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const id = document.getElementById('abono-pago-id').value;
+    const monto = parseFloat(document.getElementById('abono-monto-ingresado').value) || 0;
+    const metodo = document.getElementById('abono-metodo').value;
+
+    const pagoDoc = listaPagosCache.find(p => p.id === id);
+    if (!pagoDoc) return;
+
+    if (monto <= 0 || monto > pagoDoc.saldoPendiente) {
+        mostrarNotificacion('⚠️ El monto del abono debe ser mayor a Q0 y menor al saldo pendiente.', 'error');
+        return;
+    }
+
+    const nuevoPagado = (pagoDoc.montoPagado || 0) + monto;
+    const nuevoSaldo = Math.max(0, pagoDoc.montoTotal - nuevoPagado);
+    const ahora = new Date();
+    const fechaStr = ahora.toLocaleDateString() + ' ' + ahora.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    const mesAnioStr = ahora.toLocaleDateString('es-ES', { month: 'long', year: 'numeric' }).toUpperCase();
+
+    const historialAbonosAct = pagoDoc.historialAbonos || [];
+    historialAbonosAct.push({ fecha: fechaStr, monto: monto, metodo: metodo });
+
+    try {
+        await updateDoc(doc(db, "pagos_creditos", id), {
+            montoPagado: nuevoPagado,
+            saldoPendiente: nuevoSaldo,
+            estado: nuevoSaldo <= 0 ? 'SOLVENTE' : 'PENDIENTE',
+            historialAbonos: historialAbonosAct
+        });
+
+        const abonoTransaccion = {
+            numRecibo: pagoDoc.numRecibo || 'ABONO',
+            tipo: 'ABONO DEUDA',
+            concepto: `ABONO A DEUDA (${pagoDoc.numRecibo || 'CRÉDITO'})`,
+            cliente: pagoDoc.cliente,
+            estilista: 'SISTEMA',
+            monto: monto,
+            metodo: metodo,
+            fecha: fechaStr,
+            mesAnio: mesAnioStr,
+            timestamp: ahora.getTime()
+        };
+
+        await addDoc(ventasRef, abonoTransaccion);
+        await addDoc(permanenteRef, abonoTransaccion);
+
+        cerrarModalAbono();
+        mostrarNotificacion(`💵 Abono de Q${monto.toFixed(2)} registrado exitosamente.`, 'exito');
+    } catch (err) {
+        mostrarNotificacion('❌ Error al registrar el abono.', 'error');
+    }
+});
+
 // HISTORIAL DE RECIBOS
 onSnapshot(recibosRef, (snapshot) => {
     listaRecibosCache = [];
@@ -590,7 +656,7 @@ function renderizarRecibosHistorial() {
     });
 
     if (filtrados.length === 0) {
-        tablaRecibosHistorial.innerHTML = `<tr><td colspan="7" style="text-align: center; color: #888;">No hay comprobantes guardados.</td></tr>`;
+        tablaRecibosHistorial.innerHTML = `<tr><td colspan="8" style="text-align: center; color: #888;">No hay comprobantes guardados.</td></tr>`;
         return;
     }
 
@@ -604,6 +670,7 @@ function renderizarRecibosHistorial() {
             <td><small>${rec.fecha || ''}</small></td>
             <td><strong>${(rec.cliente || 'CLIENTE GENERAL').toUpperCase()}</strong></td>
             <td><small style="color: var(--text-muted);">${resumenItems}</small></td>
+            <td style="text-align: center;"><small style="background:rgba(255,255,255,0.05); padding:2px 6px; border-radius:4px;">${rec.metodo || 'Efectivo'}</small></td>
             <td style="text-align: center; font-weight: bold; color: #81c784;">Q${parseFloat(rec.total || 0).toFixed(2)}</td>
             <td style="text-align: center;">${estadoBadge}</td>
             <td style="text-align: center;">
@@ -624,7 +691,7 @@ window.verDetalleRecibo = (idRecibo) => {
     if (!rec) return;
 
     document.getElementById('ver-recibo-titulo').textContent = `Comprobante ${rec.numRecibo}`;
-    document.getElementById('ver-recibo-sub').textContent = `Clienta: ${rec.cliente.toUpperCase()} | Fecha: ${rec.fecha}`;
+    document.getElementById('ver-recibo-sub').textContent = `Clienta: ${rec.cliente.toUpperCase()} | Método: ${rec.metodo || 'Efectivo'} | Fecha: ${rec.fecha}`;
 
     const tablaItems = document.getElementById('ver-recibo-items');
     tablaItems.innerHTML = '';
@@ -657,6 +724,7 @@ window.reeditarReciboPOS = (idRecibo) => {
     };
 
     document.getElementById('pos-cliente').value = rec.cliente;
+    document.getElementById('pos-metodo-pago').value = rec.metodo || 'Efectivo';
     renderizarTicketPOS();
     navegarA('ficha');
     mostrarNotificacion(`✏️ Comprobante ${rec.numRecibo} cargado en la ficha para editar.`, 'exito');
@@ -682,6 +750,7 @@ function generarPDFReciboIndividual(recibo) {
     docPdf.line(14, 35, 196, 35);
     docPdf.setFont('helvetica', 'bold');
     docPdf.text(`CLIENTA: ${recibo.cliente.toUpperCase()}`, 14, 43);
+    docPdf.text(`MÉTODO DE PAGO: ${(recibo.metodo || 'EFECTIVO').toUpperCase()}`, 130, 43);
 
     const filas = (recibo.items || []).map(i => [
         i.tipo,
@@ -926,7 +995,7 @@ function generarPDFComisionesEstilistas() {
     docPdf.save(`Comisiones_Estilistas_${hoy.replace(/\//g, '-')}.pdf`);
 }
 
-// ----------------- HISTORIAL PERMANENTE DE TRANSACCIONES (RESPALDO HISTÓRICO) -----------------
+// HISTORIAL PERMANENTE DE TRANSACCIONES
 onSnapshot(permanenteRef, (snapshot) => {
     listaPermanenteCache = [];
     snapshot.forEach((docSnapshot) => {
