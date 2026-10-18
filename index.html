@@ -1,0 +1,627 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>D'Mar Beauty House - Gestión de Salón & Servicios</title>
+    
+    <link rel="icon" type="image/jpeg" href="logo.jpg">
+    <link rel="apple-touch-icon" href="logo.jpg">
+    <link rel="stylesheet" href="style.css">
+
+    <!-- LIBRERÍAS PARA GENERACIÓN DE PDF -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
+</head>
+<body class="theme-ficha">
+
+    <!-- MENÚ LATERAL DESPLEGABLE -->
+    <div id="sidebar-overlay" class="sidebar-overlay" onclick="toggleMenu()"></div>
+    <aside id="sidebar" class="sidebar">
+        <div class="sidebar-header">
+            <img src="logo.jpg" alt="D'Mar Logo" class="sidebar-logo">
+            <button class="btn-close-menu" onclick="toggleMenu()">✕</button>
+        </div>
+        <nav class="sidebar-nav">
+            <button class="menu-item active" id="menu-btn-ficha" onclick="navegarA('ficha')">
+                <span class="menu-icon">💇‍♀️</span> Ficha de Atención
+            </button>
+            <button class="menu-item" id="menu-btn-recibos" onclick="navegarA('recibos')">
+                <span class="menu-icon">🧾</span> Recibos & Comprobantes
+            </button>
+            <button class="menu-item" id="menu-btn-inventario" onclick="navegarA('inventario')">
+                <span class="menu-icon">📦</span> Gestión de Inventario
+            </button>
+            <button class="menu-item" id="menu-btn-servicios" onclick="navegarA('servicios')">
+                <span class="menu-icon">✨</span> Catálogo de Servicios
+            </button>
+            <button class="menu-item" id="menu-btn-estilistas" onclick="navegarA('estilistas')">
+                <span class="menu-icon">✂️</span> Control de Estilistas (Comisiones)
+            </button>
+            <button class="menu-item" id="menu-btn-pagos" onclick="navegarA('pagos')">
+                <span class="menu-icon">💳</span> Control de Pagos & Créditos
+            </button>
+            <button class="menu-item" id="menu-btn-reportes" onclick="navegarA('reportes')">
+                <span class="menu-icon">📊</span> Historial Diario & Cierre
+            </button>
+            <button class="menu-item" id="menu-btn-permanente" onclick="navegarA('permanente')">
+                <span class="menu-icon">📅</span> Historial Mensual Permanente
+            </button>
+            <button class="menu-item" id="menu-btn-correcciones" onclick="navegarA('correcciones')">
+                <span class="menu-icon">⚙️</span> Corrección de Registros
+            </button>
+        </nav>
+        <div class="sidebar-footer">
+            <p>D'Mar Beauty House © 2026 | <span style="color: var(--accent-color); font-weight: bold;">v1.4.2</span></p>
+        </div>
+    </aside>
+
+    <!-- BARRA SUPERIOR -->
+    <header class="app-header">
+        <button class="btn-menu-toggle" onclick="toggleMenu()">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
+        </button>
+        <div class="header-brand">
+            <img src="logo.jpg" alt="Logo" class="header-logo-img">
+            <h1 class="header-title" id="header-seccion-titulo">Ficha de Atención de Salón</h1>
+        </div>
+
+        <button class="btn-changelog-bell" onclick="abrirModalChangelog()" title="Ver novedades">
+            🔔
+            <span class="bell-badge"></span>
+        </button>
+    </header>
+
+    <div class="container">
+        <div class="card">
+
+            <!-- SECCIÓN: FICHA DE ATENCIÓN -->
+            <div id="seccion-ficha" class="app-section">
+                <div style="background: rgba(212, 175, 55, 0.08); border: 1px solid var(--border-color); padding: 18px; border-radius: 12px; margin-bottom: 20px;">
+                    <h2 style="color: var(--accent-color); font-size: 1.1rem; margin-bottom: 12px;">✨ Registro de Atención a Clienta</h2>
+                    
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; margin-bottom: 15px;">
+                        <div>
+                            <label style="font-size: 0.8rem; color: var(--text-muted); display: block; margin-bottom: 4px;">Nombre de la Clienta:</label>
+                            <input type="text" id="pos-cliente" placeholder="Ej: MARIA LOPEZ" class="input-uppercase" list="historial-clientes-datalist" autocomplete="off">
+                            <datalist id="historial-clientes-datalist"></datalist>
+                        </div>
+                        <div>
+                            <label style="font-size: 0.8rem; color: var(--text-muted); display: block; margin-bottom: 4px;">Estilista Predeterminada:</label>
+                            <input type="text" id="pos-estilista-defecto" placeholder="Ej: LUCIA" class="input-uppercase" list="historial-estilistas-datalist" autocomplete="off">
+                            <datalist id="historial-estilistas-datalist"></datalist>
+                        </div>
+                    </div>
+
+                    <div style="display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 15px;">
+                        <button class="btn-primary" onclick="abrirModalAgregarServicioPOS()" style="flex: 1; background: linear-gradient(135deg, #e8a5c8, #c4739e); color: black;">💇‍♀️ + Agregar Servicio</button>
+                        <button class="btn-primary" onclick="abrirModalAgregarProductoPOS()" style="flex: 1; background: linear-gradient(135deg, #d4af37, #b89628); color: black;">📦 + Agregar Producto</button>
+                    </div>
+
+                    <div class="table-responsive">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Tipo</th>
+                                    <th>Servicio / Producto</th>
+                                    <th>Estilista</th>
+                                    <th style="text-align: center;">Cant.</th>
+                                    <th style="text-align: center;">Precio Unit.</th>
+                                    <th style="text-align: center;">Subtotal</th>
+                                    <th style="text-align: center;">Acción</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tabla-pos-items">
+                                <tr><td colspan="7" style="text-align: center; color: #888;">No ha agregado ningún trabajo o producto a esta ficha.</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div style="background: rgba(0,0,0,0.3); border: 1px solid var(--border-color); border-radius: 10px; padding: 15px; margin-top: 15px;">
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; margin-bottom: 12px;">
+                            <div>
+                                <label style="font-size: 0.8rem; color: var(--text-muted); display: block; margin-bottom: 4px;">Estado del Pago:</label>
+                                <select id="pos-estado-pago" onchange="toggleCamposAbonoPOS()">
+                                    <option value="COMPLETO">💵 Pagado Completo</option>
+                                    <option value="CREDITO">⚠️ Pendiente / Pago Parcial (Registrar Deuda)</option>
+                                </select>
+                            </div>
+                            <div id="contenedor-pos-abono" style="display: none;">
+                                <label style="font-size: 0.8rem; color: var(--text-muted); display: block; margin-bottom: 4px;">Monto Abonado Hoy (Q):</label>
+                                <input type="number" step="0.01" id="pos-monto-abono" placeholder="0.00" oninput="actualizarSumaDinamicaPOS()">
+                            </div>
+                        </div>
+
+                        <div id="contenedor-items-pendientes-checkbox" style="display: none; background: rgba(255,152,0,0.08); border: 1px dashed #ff9800; border-radius: 8px; padding: 12px; margin-bottom: 12px;">
+                            <label style="font-size: 0.85rem; color: #ffb74d; font-weight: bold; display: block; margin-bottom: 8px;">
+                                📌 Marque exactamente qué ítems quedan PENDIENTES de pago:
+                            </label>
+                            <div id="lista-checkboxes-pendientes" style="display: flex; flex-direction: column; gap: 6px;"></div>
+                        </div>
+
+                        <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid rgba(255,255,255,0.08); padding-top: 12px; flex-wrap: wrap; gap: 15px;">
+                            <div style="display: flex; gap: 20px; align-items: center; flex-wrap: wrap;">
+                                <div>
+                                    <span style="font-size: 0.75rem; color: var(--text-muted); display: block;">Total Ficha:</span>
+                                    <h3 id="pos-total-monto" style="color: var(--text-light); font-size: 1.3rem; margin: 0;">Q0.00</h3>
+                                </div>
+                                <div id="box-cobro-hoy">
+                                    <span style="font-size: 0.75rem; color: #81c784; display: block; font-weight: bold;">A Cobrar Hoy (Caja):</span>
+                                    <h2 id="pos-cobro-hoy-monto" style="color: #81c784; font-size: 1.8rem; margin: 0;">Q0.00</h2>
+                                </div>
+                                <div id="box-deuda-saldo" style="display: none;">
+                                    <span style="font-size: 0.75rem; color: #ef5350; display: block; font-weight: bold;">Saldo a Deuda:</span>
+                                    <h3 id="pos-deuda-monto" style="color: #ef5350; font-size: 1.4rem; margin: 0;">Q0.00</h3>
+                                </div>
+                            </div>
+
+                            <button class="btn-primary" onclick="confirmarYGuardarReciboPOS()" style="background: linear-gradient(135deg, #2e7d32, #1b5e20); color: white; padding: 12px 25px;">✅ Finalizar Atención & Generar Comprobante</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SECCIÓN: RECIBOS & COMPROBANTES -->
+            <div id="seccion-recibos" class="app-section" style="display: none;">
+                <div class="section-header-flex">
+                    <h2>Historial de Comprobantes de Salón</h2>
+                    <input type="text" id="buscador-recibos" placeholder="🔍 Buscar clienta o #Comprobante..." class="search-input">
+                </div>
+
+                <div class="table-responsive">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th># Comprobante</th>
+                                <th>Fecha y Hora</th>
+                                <th>Clienta</th>
+                                <th>Trabajos Realizados / Productos</th>
+                                <th style="text-align: center;">Suma General</th>
+                                <th style="text-align: center;">Estado Pago</th>
+                                <th style="text-align: center;">Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tabla-recibos-historial"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- SECCIÓN: INVENTARIO DE PRODUCTOS -->
+            <div id="seccion-inventario" class="app-section" style="display: none;">
+                <div id="panel-alertas" style="display: none; background: rgba(229, 57, 53, 0.1); border-left: 4px solid #e53935; padding: 12px; margin-bottom: 20px; border-radius: 8px;">
+                    <h3 style="color: #ef5350; margin: 0 0 8px 0; font-size: 14px; font-weight: 600;">⚠️ Atención: Productos Agotados</h3>
+                    <div id="lista-alertas" style="display: flex; flex-direction: column; gap: 6px;"></div>
+                </div>
+
+                <form id="form-producto" class="form-grid">
+                    <input type="text" id="codigo-prod" placeholder="Código (Ej: P001)" class="input-uppercase" required>
+                    <input type="text" id="nombre-prod" placeholder="Nombre del Producto" class="input-uppercase" required>
+                    <input type="number" step="0.01" id="precio-prod" placeholder="Precio (Q)" required>
+                    <input type="number" id="stock-prod" placeholder="Cantidad Inicial" required>
+                    <button type="submit" class="btn-primary" id="btn-guardar-nuevo">Guardar Producto</button>
+                </form>
+
+                <div class="section-header-flex">
+                    <h2>Inventario de Productos</h2>
+                    <input type="text" id="buscador-productos" placeholder="🔍 Buscar producto..." class="search-input">
+                </div>
+
+                <div class="table-responsive">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Código</th>
+                                <th>Producto</th>
+                                <th style="text-align: center;">Precio</th>
+                                <th style="text-align: center;">Existencias</th>
+                                <th style="text-align: center;">Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tabla-productos"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- SECCIÓN: CATÁLOGO DE SERVICIOS -->
+            <div id="seccion-servicios" class="app-section" style="display: none;">
+                <form id="form-servicio" class="form-grid" style="grid-template-columns: 2fr 1fr auto;">
+                    <input type="text" id="nombre-serv" placeholder="Nombre del Servicio (Ej: CORTE, BALAYAGE)" class="input-uppercase" required>
+                    <input type="number" step="0.01" id="precio-serv" placeholder="Precio Estándar (Q)" required>
+                    <button type="submit" class="btn-primary" id="btn-guardar-servicio" style="grid-column: span 3;">Guardar Servicio en Catálogo</button>
+                </form>
+
+                <div class="section-header-flex">
+                    <h2>Catálogo de Servicios</h2>
+                    <input type="text" id="buscador-servicios" placeholder="🔍 Buscar servicio por nombre..." class="search-input">
+                </div>
+
+                <div class="table-responsive">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Servicio / Trabajo</th>
+                                <th style="text-align: center;">Precio Estándar</th>
+                                <th style="text-align: center;">Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tabla-servicios"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- SECCIÓN: CONTROL DE ESTILISTAS -->
+            <div id="seccion-estilistas" class="app-section" style="display: none;">
+                <div style="display: flex; gap: 10px; margin-bottom: 20px;">
+                    <button class="btn-primary" onclick="procesarCierreMensualComisiones()" style="background: linear-gradient(135deg, #e65100, #ef6c00); color: white;">🔒 Confirmar Cierre Mensual de Comisiones & PDF</button>
+                </div>
+
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <span class="stat-title">Total Generado en Servicios</span>
+                        <h3 id="stat-estilistas-total-servicios">Q0.00</h3>
+                    </div>
+                    <div class="stat-card">
+                        <span class="stat-title">Total Comisiones (30%)</span>
+                        <h3 id="stat-estilistas-total-comision" style="color: #ffb74d;">Q0.00</h3>
+                    </div>
+                    <div class="stat-card">
+                        <span class="stat-title">Total Trabajos Realizados</span>
+                        <h3 id="stat-estilistas-conteo">0</h3>
+                    </div>
+                </div>
+
+                <div class="section-header-flex">
+                    <h2>Liquidación de Comisiones de Estilistas (30% Fijo en Servicios)</h2>
+                    <input type="text" id="buscador-estilistas" placeholder="🔍 Buscar por Estilista..." class="search-input">
+                </div>
+
+                <div id="contenedor-resumen-estilistas" style="margin-bottom: 25px;"></div>
+
+                <div class="section-header-flex">
+                    <h2>Desglose Detallado de Servicios Realizados (Mes Actual)</h2>
+                </div>
+
+                <div class="table-responsive">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Fecha y Hora</th>
+                                <th>Estilista / Colaboradora</th>
+                                <th>Servicio Realizado</th>
+                                <th>Cliente</th>
+                                <th style="text-align: center;">Precio Servicio</th>
+                                <th style="text-align: center;">Comisión (30%)</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tabla-estilistas-detalles"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- SECCIÓN: CONTROL DE PAGOS Y CRÉDITOS -->
+            <div id="seccion-pagos" class="app-section" style="display: none;">
+                <form id="form-pago" class="form-grid">
+                    <input type="text" id="nombre-cliente" placeholder="Nombre Completo de la Clienta" class="input-uppercase" list="historial-clientes-datalist" required autocomplete="off">
+                    <input type="number" step="0.01" id="total-credito" placeholder="Monto Total del Crédito (Q)" required>
+                    <input type="number" step="0.01" id="abono-inicial" placeholder="Abono Inicial (Q) [Opcional]">
+                    
+                    <div style="grid-column: 1 / -1;">
+                        <label style="font-size: 0.85rem; color: var(--text-muted); display: block; margin-bottom: 4px;">Método de Pago (Abono Inicial):</label>
+                        <select id="metodo-pago-credito">
+                            <option value="Efectivo">💵 Efectivo</option>
+                            <option value="Transferencia">🏦 Transferencia Bancaria</option>
+                            <option value="Tarjeta">💳 Tarjeta de Crédito / Débito</option>
+                        </select>
+                    </div>
+
+                    <button type="submit" class="btn-primary" style="background: linear-gradient(135deg, #1976D2, #115293); color: white;">➕ Registrar Crédito Manual</button>
+                </form>
+
+                <div class="section-header-flex">
+                    <h2>Cuentas por Cobrar & Saldos Pendientes</h2>
+                    <input type="text" id="buscador-pagos" placeholder="🔍 Buscar clienta..." class="search-input">
+                </div>
+
+                <div class="table-responsive">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Clienta</th>
+                                <th>Fecha y Hora</th>
+                                <th>Detalle Pendiente (Desplegable)</th>
+                                <th style="text-align: center;">Suma General</th>
+                                <th style="text-align: center;">Pagado</th>
+                                <th style="text-align: center;">Saldo Pendiente</th>
+                                <th style="text-align: center;">Estado</th>
+                                <th style="text-align: center;">Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tabla-pagos"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- SECCIÓN: HISTORIAL DIARIO & CAJA -->
+            <div id="seccion-reportes" class="app-section" style="display: none;">
+                <div style="display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap;">
+                    <button class="btn-primary" onclick="abrirModalGasto()" style="flex: 1; background: linear-gradient(135deg, #e65100, #ef6c00); color: white;">💸 Registrar Gasto / Salida</button>
+                    <button class="btn-primary" onclick="procesarCierreCaja()" style="flex: 1; background: linear-gradient(135deg, #2e7d32, #1b5e20); color: white;">🔒 Confirmar Cierre de Caja & PDF</button>
+                </div>
+
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <span class="stat-title">Ingreso Total</span>
+                        <h3 id="stat-total-ventas">Q0.00</h3>
+                    </div>
+                    <div class="stat-card">
+                        <span class="stat-title">Efectivo en Caja</span>
+                        <h3 id="stat-efectivo" style="color: #81c784;">Q0.00</h3>
+                    </div>
+                    <div class="stat-card">
+                        <span class="stat-title">Pagos Digitales</span>
+                        <h3 id="stat-digital" style="color: #64b5f6;">Q0.00</h3>
+                    </div>
+                    <div class="stat-card">
+                        <span class="stat-title">Gastos / Salidas</span>
+                        <h3 id="stat-gastos" style="color: #e53935;">Q0.00</h3>
+                    </div>
+                </div>
+
+                <div class="section-header-flex">
+                    <h2>Historial de Movimientos de Caja (Jornada Actual)</h2>
+                    <input type="text" id="buscador-ventas" placeholder="🔍 Buscar movimiento..." class="search-input">
+                </div>
+
+                <div class="table-responsive">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Fecha y Hora</th>
+                                <th>Concepto / Detalle</th>
+                                <th>Atendió / Cliente</th>
+                                <th>Monto</th>
+                                <th>Tipo / Método</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tabla-ventas-historial"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- SECCIÓN: HISTORIAL MENSUAL PERMANENTE -->
+            <div id="seccion-permanente" class="app-section" style="display: none;">
+                <div class="section-header-flex">
+                    <h2>Historial Permanente de Transacciones</h2>
+                    <input type="text" id="buscador-permanente" placeholder="🔍 Buscar registro histórico..." class="search-input">
+                </div>
+
+                <div id="contenedor-historial-permanente"></div>
+            </div>
+
+            <!-- SECCIÓN: CORRECCIÓN DE REGISTROS -->
+            <div id="seccion-correcciones" class="app-section" style="display: none;">
+                <div style="background: rgba(229, 57, 53, 0.1); border-left: 4px solid #e53935; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
+                    <h3 style="color: #ef5350; margin: 0 0 6px 0; font-size: 1rem;">⚙️ Módulo de Corrección & Anulación Total</h3>
+                    <p style="color: var(--text-muted); font-size: 0.85rem; margin: 0;">
+                        Al anular un registro o comprobante en esta sección, se eliminará por completo de **Ventas Diarias**, **Cierre de Caja**, **Comisiones de Estilistas**, **Comprobantes Emitidos** e **Historial Permanente**, regresando el stock correspondiente al inventario.
+                    </p>
+                </div>
+
+                <div class="section-header-flex">
+                    <h2>Anulación Completa de Registros</h2>
+                    <input type="text" id="buscador-correcciones" placeholder="🔍 Buscar por fecha, concepto, clienta..." class="search-input">
+                </div>
+
+                <div class="table-responsive">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Fecha y Hora</th>
+                                <th>Tipo</th>
+                                <th>Concepto / Detalle</th>
+                                <th>Atendió / Clienta</th>
+                                <th style="text-align: center;">Monto (Q)</th>
+                                <th style="text-align: center;">Acción de Anulación</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tabla-correcciones"></tbody>
+                    </table>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- MODAL CHANGELOG -->
+    <div id="modal-changelog" class="modal-overlay" style="display: none;">
+        <div class="modal-content" style="max-width: 520px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 10px; margin-bottom: 15px;">
+                <h3 style="margin: 0; color: var(--accent-color);">🔔 Novedades & Versiones</h3>
+                <span style="background: var(--accent-color); color: #000; font-weight: bold; padding: 2px 8px; border-radius: 12px; font-size: 0.75rem;">v1.4.2</span>
+            </div>
+
+            <div style="max-height: 320px; overflow-y: auto; display: flex; flex-direction: column; gap: 15px; padding-right: 5px;">
+                <div style="background: rgba(255,255,255,0.03); border: 1px solid var(--border-color); border-radius: 8px; padding: 12px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                        <strong style="color: #81c784; font-size: 0.95rem;">Versión 1.4.2 (Actual)</strong>
+                        <small style="color: var(--text-muted);">Octubre 2026</small>
+                    </div>
+                    <ul style="font-size: 0.83rem; color: var(--text-light); padding-left: 18px; line-height: 1.5;">
+                        <li><strong>Historial Permanente 100% Funcional</strong>: Visualización de todas las transacciones históricas guardadas en la base de datos de Firebase.</li>
+                        <li><strong>Corrección de descarga PDF</strong>: Soporte universal garantizado para jsPDF sin bloqueos de navegador.</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="modal-actions" style="margin-top: 18px;">
+                <button type="button" class="btn-primary" onclick="cerrarModalChangelog()">Entendido / Cerrar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL AGREGAR SERVICIO -->
+    <div id="modal-pos-servicio" class="modal-overlay" style="display: none;">
+        <div class="modal-content">
+            <h3>Agregar Servicio a la Ficha</h3>
+            <form id="form-pos-servicio">
+                <label>Escriba o Seleccione el Servicio:</label>
+                <input type="text" id="pos-input-servicio" placeholder="🔍 Escriba el servicio (ej: Corte, Balayage...)" class="input-uppercase" list="lista-servicios-datalist" required autocomplete="off">
+                <datalist id="lista-servicios-datalist"></datalist>
+
+                <label>Estilista que lo realizó:</label>
+                <input type="text" id="pos-item-estilista" placeholder="Ej: MARIA" class="input-uppercase" list="historial-estilistas-datalist" required autocomplete="off">
+
+                <label>Precio del Servicio (Q) <small style="color: #888;">(Opcional - Se autocompleta)</small>:</label>
+                <input type="number" step="0.01" id="pos-item-precio-serv" placeholder="Se llena automáticamente">
+
+                <div class="modal-actions">
+                    <button type="button" class="btn-cancel" onclick="cerrarModalAgregarServicioPOS()">Cancelar</button>
+                    <button type="submit" class="btn-primary">Añadir a la Ficha</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL AGREGAR PRODUCTO -->
+    <div id="modal-pos-producto" class="modal-overlay" style="display: none;">
+        <div class="modal-content">
+            <h3>Agregar Producto a la Ficha</h3>
+            <form id="form-pos-producto">
+                <label>Escriba o Seleccione el Producto:</label>
+                <input type="text" id="pos-input-producto" placeholder="🔍 Escriba el producto (ej: Shampoo, Tinte...)" class="input-uppercase" list="lista-productos-datalist" required autocomplete="off">
+                <datalist id="lista-productos-datalist"></datalist>
+
+                <label>Cantidad:</label>
+                <input type="number" id="pos-item-cant-prod" min="1" value="1" required>
+
+                <label>Precio Unitario (Q) <small style="color: #888;">(Opcional - Se autocompleta)</small>:</label>
+                <input type="number" step="0.01" id="pos-item-precio-prod" placeholder="Se llena automáticamente">
+
+                <div class="modal-actions">
+                    <button type="button" class="btn-cancel" onclick="cerrarModalAgregarProductoPOS()">Cancelar</button>
+                    <button type="submit" class="btn-primary">Añadir a la Ficha</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL VER COMPROBANTE -->
+    <div id="modal-ver-recibo" class="modal-overlay" style="display: none;">
+        <div class="modal-content" style="max-width: 550px;">
+            <h3 id="ver-recibo-titulo">Comprobante de Atención</h3>
+            <p id="ver-recibo-sub" style="color: var(--accent-color); font-weight: bold; margin-bottom: 10px;"></p>
+
+            <div class="table-responsive" style="max-height: 250px; overflow-y: auto;">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Tipo</th>
+                            <th>Concepto</th>
+                            <th>Estilista</th>
+                            <th style="text-align: center;">Monto</th>
+                        </tr>
+                    </thead>
+                    <tbody id="ver-recibo-items"></tbody>
+                </table>
+            </div>
+
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 15px; border-top: 1px solid var(--border-color); padding-top: 10px;">
+                <span style="color: var(--text-muted);">Suma General:</span>
+                <h3 id="ver-recibo-total" style="color: #81c784; margin: 0;">Q0.00</h3>
+            </div>
+
+            <div class="modal-actions" style="margin-top: 15px;">
+                <button type="button" class="btn-cancel" onclick="cerrarModalVerRecibo()">Cerrar</button>
+                <button type="button" id="btn-reimprimir-recibo" class="btn-primary" style="background: linear-gradient(135deg, #1976D2, #115293); color: white;">📄 Descargar PDF</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL REGISTRO DE GASTO -->
+    <div id="modal-gasto" class="modal-overlay" style="display: none;">
+        <div class="modal-content">
+            <h3>Registrar Salida / Gasto</h3>
+            <form id="form-gasto">
+                <label>Descripción / Motivo del Gasto:</label>
+                <input type="text" id="gasto-concepto" placeholder="Ej: Compra de insumos, café..." class="input-uppercase" required>
+
+                <label>Monto del Gasto (Q):</label>
+                <input type="number" step="0.01" id="gasto-monto" min="0.01" placeholder="0.00" required>
+
+                <label>Tomado de:</label>
+                <select id="gasto-origen">
+                    <option value="Efectivo">💵 Efectivo de Caja</option>
+                    <option value="Transferencia">🏦 Transferencia / Banco</option>
+                </select>
+
+                <div class="modal-actions">
+                    <button type="button" class="btn-cancel" onclick="cerrarModalGasto()">Cancelar</button>
+                    <button type="submit" class="btn-primary" style="background: linear-gradient(135deg, #e65100, #ef6c00); color: white;">Registrar Gasto</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL DE CONFIRMACIÓN -->
+    <div id="modal-confirm" class="modal-overlay" style="display: none;">
+        <div class="modal-content" style="max-width: 380px; text-align: center;">
+            <div style="font-size: 2.5rem; margin-bottom: 10px;">⚠️</div>
+            <h3 id="confirm-titulo" style="margin-bottom: 8px;">¿Está seguro?</h3>
+            <p id="confirm-mensaje" style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 20px;"></p>
+            <div class="modal-actions" style="justify-content: center; gap: 15px;">
+                <button type="button" class="btn-cancel" id="btn-confirm-cancel">Cancelar</button>
+                <button type="button" class="btn-primary" id="btn-confirm-ok" style="background: linear-gradient(135deg, #c62828, #b71c1c); color: white;">Aceptar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODALES EDICIONES -->
+    <div id="modal-edicion" class="modal-overlay" style="display: none;">
+        <div class="modal-content">
+            <h3>Editar Datos del Producto</h3>
+            <form id="form-editar">
+                <input type="hidden" id="edit-id">
+
+                <label>Código de Producto:</label>
+                <input type="text" id="edit-codigo" class="input-uppercase" required>
+
+                <label>Nombre del Producto:</label>
+                <input type="text" id="edit-nombre" class="input-uppercase" required>
+
+                <label>Precio de Venta (Q):</label>
+                <input type="number" step="0.01" id="edit-precio" required>
+
+                <label>Existencias en Stock:</label>
+                <input type="number" id="edit-stock" required>
+
+                <div class="modal-actions">
+                    <button type="button" class="btn-cancel" onclick="cerrarModalEdicion()">Cancelar</button>
+                    <button type="submit" class="btn-primary" id="btn-guardar-edit">Guardar Cambios</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="modal-edicion-servicio" class="modal-overlay" style="display: none;">
+        <div class="modal-content">
+            <h3>Editar Servicio</h3>
+            <form id="form-editar-servicio">
+                <input type="hidden" id="edit-serv-id">
+
+                <label>Nombre del Servicio / Trabajo:</label>
+                <input type="text" id="edit-serv-nombre" class="input-uppercase" required>
+
+                <label>Precio Estándar (Q):</label>
+                <input type="number" step="0.01" id="edit-serv-precio" required>
+
+                <div class="modal-actions">
+                    <button type="button" class="btn-cancel" onclick="cerrarModalEdicionServicio()">Cancelar</button>
+                    <button type="submit" class="btn-primary">Guardar Cambios</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script type="module" src="app.js"></script>
+</body>
+</html>
