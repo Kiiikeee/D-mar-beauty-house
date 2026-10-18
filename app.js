@@ -285,6 +285,27 @@ document.getElementById('form-pos-servicio').addEventListener('submit', (e) => {
     cerrarModalAgregarServicioPOS();
 });
 
+// FUNCIÓN AUXILIAR DE BÚSQUEDA DE PRODUCTO EN CACHÉ
+function buscarProductoEnCache(texto) {
+    if (!texto) return null;
+    const txtLimpio = texto.trim().toUpperCase();
+    
+    // Búsqueda exacta por etiqueta o por nombre puro
+    let encontrado = listaProductosCache.find(p => 
+        `${p.nombre.toUpperCase()} - STOCK: ${p.stock} - ${formatearQ(p.precio)}` === txtLimpio || 
+        p.nombre.toUpperCase() === txtLimpio || 
+        p.codigo.toUpperCase() === txtLimpio
+    );
+
+    // Búsqueda parcial (si el usuario escribió parcialmente el nombre)
+    if (!encontrado) {
+        const parteNombre = txtLimpio.split('-')[0].trim();
+        encontrado = listaProductosCache.find(p => p.nombre.toUpperCase() === parteNombre || p.nombre.toUpperCase().includes(parteNombre));
+    }
+
+    return encontrado;
+}
+
 // AGREGAR PRODUCTO A LA FICHA CON CÁLCULO Y AUTOCOMPLETADO AUTOMÁTICO DE PRECIO
 window.abrirModalAgregarProductoPOS = () => {
     const datalistProd = document.getElementById('lista-productos-datalist');
@@ -304,18 +325,20 @@ window.abrirModalAgregarProductoPOS = () => {
 };
 
 function recargaPrecioDinamicoProductoPOS() {
-    const texto = document.getElementById('pos-input-producto').value.trim().toUpperCase();
+    const texto = document.getElementById('pos-input-producto').value;
     const cant = parseInt(document.getElementById('pos-item-cant-prod').value) || 1;
     
-    const encontrado = listaProductosCache.find(p => `${p.nombre.toUpperCase()} - Stock: ${p.stock} - ${formatearQ(p.precio)}` === texto || p.nombre.toUpperCase() === texto);
+    const prodEncontrado = buscarProductoEnCache(texto);
     
-    if (encontrado) {
-        const precioTotalAuto = (parseFloat(encontrado.precio) || 0) * cant;
-        document.getElementById('pos-item-precio-prod').value = precioTotalAuto.toFixed(2);
+    if (prodEncontrado) {
+        const precioUnit = parseFloat(prodEncontrado.precio) || 0;
+        const subtotalCalc = precioUnit * cant;
+        document.getElementById('pos-item-precio-prod').value = subtotalCalc.toFixed(2);
     }
 }
 
 document.getElementById('pos-input-producto').addEventListener('input', recargaPrecioDinamicoProductoPOS);
+document.getElementById('pos-input-producto').addEventListener('change', recargaPrecioDinamicoProductoPOS);
 document.getElementById('pos-item-cant-prod').addEventListener('input', recargaPrecioDinamicoProductoPOS);
 document.getElementById('pos-item-cant-prod').addEventListener('change', recargaPrecioDinamicoProductoPOS);
 
@@ -323,11 +346,10 @@ window.cerrarModalAgregarProductoPOS = () => { document.getElementById('modal-po
 
 document.getElementById('form-pos-producto').addEventListener('submit', (e) => {
     e.preventDefault();
-    const textoInput = document.getElementById('pos-input-producto').value.trim().toUpperCase();
+    const textoInput = document.getElementById('pos-input-producto').value.trim();
     if (!textoInput) return;
 
-    let prodSeleccionado = listaProductosCache.find(p => `${p.nombre.toUpperCase()} - Stock: ${p.stock} - ${formatearQ(p.precio)}` === textoInput || p.nombre.toUpperCase() === textoInput);
-
+    const prodSeleccionado = buscarProductoEnCache(textoInput);
     const cant = parseInt(document.getElementById('pos-item-cant-prod').value) || 1;
 
     if (prodSeleccionado && cant > prodSeleccionado.stock) {
@@ -335,8 +357,6 @@ document.getElementById('form-pos-producto').addEventListener('submit', (e) => {
         return;
     }
 
-    const nombreProd = prodSeleccionado ? prodSeleccionado.nombre.toUpperCase() : textoInput.split('-')[0].trim();
-    
     let subtotalIngresado = parseFloat(document.getElementById('pos-item-precio-prod').value);
     let precioUnitarioCalc = 0;
 
@@ -347,6 +367,13 @@ document.getElementById('form-pos-producto').addEventListener('submit', (e) => {
     }
 
     const subtotalFinal = precioUnitarioCalc * cant;
+
+    if (subtotalFinal <= 0) {
+        mostrarNotificacion('⚠️ Por favor verifique el producto o ingrese un precio mayor a Q0.00', 'error');
+        return;
+    }
+
+    const nombreProd = prodSeleccionado ? prodSeleccionado.nombre.toUpperCase() : textoInput.split('-')[0].trim().toUpperCase();
 
     ticketPOSActual.items.push({
         tipo: 'PRODUCTO',
