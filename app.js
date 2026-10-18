@@ -226,7 +226,7 @@ function mostrarNotificacion(mensaje, tipo = 'exito') {
     }, 3000);
 }
 
-// BUSCADOR EN SERVICIOS Y PRODUCTOS
+// AGREGAR SERVICIO A LA FICHA
 window.abrirModalAgregarServicioPOS = () => {
     const datalistServ = document.getElementById('lista-servicios-datalist');
     datalistServ.innerHTML = '';
@@ -285,6 +285,7 @@ document.getElementById('form-pos-servicio').addEventListener('submit', (e) => {
     cerrarModalAgregarServicioPOS();
 });
 
+// AGREGAR PRODUCTO A LA FICHA CON CÁLCULO Y AUTOCOMPLETADO AUTOMÁTICO DE PRECIO
 window.abrirModalAgregarProductoPOS = () => {
     const datalistProd = document.getElementById('lista-productos-datalist');
     datalistProd.innerHTML = '';
@@ -302,14 +303,21 @@ window.abrirModalAgregarProductoPOS = () => {
     document.getElementById('modal-pos-producto').style.display = 'flex';
 };
 
-document.getElementById('pos-input-producto').addEventListener('input', (e) => {
-    const texto = e.target.value.trim().toUpperCase();
+function recargaPrecioDinamicoProductoPOS() {
+    const texto = document.getElementById('pos-input-producto').value.trim().toUpperCase();
+    const cant = parseInt(document.getElementById('pos-item-cant-prod').value) || 1;
+    
     const encontrado = listaProductosCache.find(p => `${p.nombre.toUpperCase()} - Stock: ${p.stock} - ${formatearQ(p.precio)}` === texto || p.nombre.toUpperCase() === texto);
     
     if (encontrado) {
-        document.getElementById('pos-item-precio-prod').value = encontrado.precio;
+        const precioTotalAuto = (parseFloat(encontrado.precio) || 0) * cant;
+        document.getElementById('pos-item-precio-prod').value = precioTotalAuto.toFixed(2);
     }
-});
+}
+
+document.getElementById('pos-input-producto').addEventListener('input', recargaPrecioDinamicoProductoPOS);
+document.getElementById('pos-item-cant-prod').addEventListener('input', recargaPrecioDinamicoProductoPOS);
+document.getElementById('pos-item-cant-prod').addEventListener('change', recargaPrecioDinamicoProductoPOS);
 
 window.cerrarModalAgregarProductoPOS = () => { document.getElementById('modal-pos-producto').style.display = 'none'; };
 
@@ -329,10 +337,16 @@ document.getElementById('form-pos-producto').addEventListener('submit', (e) => {
 
     const nombreProd = prodSeleccionado ? prodSeleccionado.nombre.toUpperCase() : textoInput.split('-')[0].trim();
     
-    let precio = parseFloat(document.getElementById('pos-item-precio-prod').value);
-    if (isNaN(precio) || precio <= 0) {
-        precio = prodSeleccionado ? parseFloat(prodSeleccionado.precio) : 0;
+    let subtotalIngresado = parseFloat(document.getElementById('pos-item-precio-prod').value);
+    let precioUnitarioCalc = 0;
+
+    if (!isNaN(subtotalIngresado) && subtotalIngresado > 0) {
+        precioUnitarioCalc = subtotalIngresado / cant;
+    } else if (prodSeleccionado) {
+        precioUnitarioCalc = parseFloat(prodSeleccionado.precio) || 0;
     }
+
+    const subtotalFinal = precioUnitarioCalc * cant;
 
     ticketPOSActual.items.push({
         tipo: 'PRODUCTO',
@@ -340,8 +354,8 @@ document.getElementById('form-pos-producto').addEventListener('submit', (e) => {
         nombre: nombreProd,
         estilista: 'N/A',
         cantidad: cant,
-        precioUnitario: precio,
-        subtotal: precio * cant,
+        precioUnitario: precioUnitarioCalc,
+        subtotal: subtotalFinal,
         comision: 0
     });
 
@@ -819,6 +833,20 @@ function renderizarProductos(productos) {
         tablaProductos.appendChild(fila);
     });
 }
+
+document.getElementById('form-producto').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const codigo = document.getElementById('codigo-prod').value.trim().toUpperCase();
+    const nombre = document.getElementById('nombre-prod').value.trim().toUpperCase();
+    const precio = parseFloat(document.getElementById('precio-prod').value) || 0;
+    const stock = parseInt(document.getElementById('stock-prod').value) || 0;
+
+    try {
+        await addDoc(productosRef, { codigo, nombre, precio, stock, fechaCreacion: new Date() });
+        document.getElementById('form-producto').reset();
+        mostrarNotificacion(`📦 Producto "${nombre}" guardado.`, 'exito');
+    } catch (error) { mostrarNotificacion('❌ Error al guardar el producto.', 'error'); }
+});
 
 // CATÁLOGO DE SERVICIOS
 onSnapshot(serviciosRef, (snapshot) => {

@@ -52,7 +52,7 @@
             </button>
         </nav>
         <div class="sidebar-footer">
-            <p>D'Mar Beauty House © 2026 | <span style="color: var(--accent-color); font-weight: bold;">v1.5.1</span></p>
+            <p>D'Mar Beauty House © 2026 | <span style="color: var(--accent-color); font-weight: bold;">v1.5.2</span></p>
         </div>
     </aside>
 
@@ -429,18 +429,18 @@
         <div class="modal-content" style="max-width: 520px;">
             <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 10px; margin-bottom: 15px;">
                 <h3 style="margin: 0; color: var(--accent-color);">🔔 Novedades & Versiones</h3>
-                <span style="background: var(--accent-color); color: #000; font-weight: bold; padding: 2px 8px; border-radius: 12px; font-size: 0.75rem;">v1.5.1</span>
+                <span style="background: var(--accent-color); color: #000; font-weight: bold; padding: 2px 8px; border-radius: 12px; font-size: 0.75rem;">v1.5.2</span>
             </div>
 
             <div style="max-height: 320px; overflow-y: auto; display: flex; flex-direction: column; gap: 15px; padding-right: 5px;">
                 <div style="background: rgba(255,255,255,0.03); border: 1px solid var(--border-color); border-radius: 8px; padding: 12px;">
                     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
-                        <strong style="color: #81c784; font-size: 0.95rem;">Versión 1.5.1 (Actual)</strong>
+                        <strong style="color: #81c784; font-size: 0.95rem;">Versión 1.5.2 (Actual)</strong>
                         <small style="color: var(--text-muted);">Octubre 2026</small>
                     </div>
                     <ul style="font-size: 0.83rem; color: var(--text-light); padding-left: 18px; line-height: 1.5;">
-                        <li><strong>Formato numérico con separador de miles (,)</strong>: Ahora todos los precios, subtotales, totales de caja, abonos y PDFs se muestran con formato legible (Ej: Q1,250.00).</li>
-                        <li><strong>Inclusión del Método de Pago en PDF</strong>: Se refleja el método de cobro en las descargas de comprobantes.</li>
+                        <li><strong>Autocompletado & Suma Automática de Productos</strong>: Al seleccionar un producto en la ficha, el precio unitario se detecta y se multiplica automáticamente al cambiar la cantidad.</li>
+                        <li><strong>Estabilidad del Historial & PDFs</strong>: Preservación absoluta de las estructuras de datos de caja, deudas, comisiones e impresiones PDF.</li>
                     </ul>
                 </div>
             </div>
@@ -486,8 +486,8 @@
                 <label>Cantidad:</label>
                 <input type="number" id="pos-item-cant-prod" min="1" value="1" required>
 
-                <label>Precio Unitario (Q) <small style="color: #888;">(Opcional - Se autocompleta)</small>:</label>
-                <input type="number" step="0.01" id="pos-item-precio-prod" placeholder="Se llena automáticamente">
+                <label>Precio Subtotal (Q) <small style="color: #888;">(Calculado automáticamente)</small>:</label>
+                <input type="number" step="0.01" id="pos-item-precio-prod" placeholder="Se calcula automáticamente">
 
                 <div class="modal-actions">
                     <button type="button" class="btn-cancel" onclick="cerrarModalAgregarProductoPOS()">Cancelar</button>
