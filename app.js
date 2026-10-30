@@ -196,7 +196,7 @@ window.navegarA = (seccion) => {
         permanente: "Historial Mensual Permanente",
         correcciones: "Anulación & Corrección de Registros"
     };
-    tituloHeader.textContent = titulos[seccion] || "D'Mar Beauty House";
+    tituloHeader.textContent = titulos[seccion] || "D'Mar Style Salón";
 
     toggleMenu();
 };
@@ -227,7 +227,8 @@ function mostrarNotificacion(mensaje, tipo = 'exito') {
 }
 
 // AGREGAR SERVICIO A LA FICHA
-window.abrirModalAgregarServicioPOS = () => {
+window.abrirModalAgregarServicioPOS = (e) => {
+    if (e && e.preventDefault) e.preventDefault();
     const datalistServ = document.getElementById('lista-servicios-datalist');
     datalistServ.innerHTML = '';
     listaServiciosCache.forEach(s => {
@@ -253,7 +254,10 @@ document.getElementById('pos-input-servicio').addEventListener('input', (e) => {
     }
 });
 
-window.cerrarModalAgregarServicioPOS = () => { document.getElementById('modal-pos-servicio').style.display = 'none'; };
+window.cerrarModalAgregarServicioPOS = (e) => { 
+    if (e && e.preventDefault) e.preventDefault();
+    document.getElementById('modal-pos-servicio').style.display = 'none'; 
+};
 
 document.getElementById('form-pos-servicio').addEventListener('submit', (e) => {
     e.preventDefault();
@@ -285,19 +289,17 @@ document.getElementById('form-pos-servicio').addEventListener('submit', (e) => {
     cerrarModalAgregarServicioPOS();
 });
 
-// FUNCIÓN AUXILIAR DE BÚSQUEDA DE PRODUCTO EN CACHÉ
+// BÚSQUEDA DE PRODUCTO EN CACHÉ
 function buscarProductoEnCache(texto) {
     if (!texto) return null;
     const txtLimpio = texto.trim().toUpperCase();
     
-    // Búsqueda exacta por etiqueta o por nombre puro
     let encontrado = listaProductosCache.find(p => 
         `${p.nombre.toUpperCase()} - STOCK: ${p.stock} - ${formatearQ(p.precio)}` === txtLimpio || 
         p.nombre.toUpperCase() === txtLimpio || 
         p.codigo.toUpperCase() === txtLimpio
     );
 
-    // Búsqueda parcial (si el usuario escribió parcialmente el nombre)
     if (!encontrado) {
         const parteNombre = txtLimpio.split('-')[0].trim();
         encontrado = listaProductosCache.find(p => p.nombre.toUpperCase() === parteNombre || p.nombre.toUpperCase().includes(parteNombre));
@@ -306,8 +308,9 @@ function buscarProductoEnCache(texto) {
     return encontrado;
 }
 
-// AGREGAR PRODUCTO A LA FICHA CON CÁLCULO Y AUTOCOMPLETADO AUTOMÁTICO DE PRECIO
-window.abrirModalAgregarProductoPOS = () => {
+// AGREGAR PRODUCTO A LA FICHA
+window.abrirModalAgregarProductoPOS = (e) => {
+    if (e && e.preventDefault) e.preventDefault();
     const datalistProd = document.getElementById('lista-productos-datalist');
     datalistProd.innerHTML = '';
     listaProductosCache.forEach(p => {
@@ -342,7 +345,10 @@ document.getElementById('pos-input-producto').addEventListener('change', recarga
 document.getElementById('pos-item-cant-prod').addEventListener('input', recargaPrecioDinamicoProductoPOS);
 document.getElementById('pos-item-cant-prod').addEventListener('change', recargaPrecioDinamicoProductoPOS);
 
-window.cerrarModalAgregarProductoPOS = () => { document.getElementById('modal-pos-producto').style.display = 'none'; };
+window.cerrarModalAgregarProductoPOS = (e) => { 
+    if (e && e.preventDefault) e.preventDefault();
+    document.getElementById('modal-pos-producto').style.display = 'none'; 
+};
 
 document.getElementById('form-pos-producto').addEventListener('submit', (e) => {
     e.preventDefault();
@@ -610,7 +616,7 @@ function renderizarPagos() {
             <td style="text-align: center; color:#ef5350; font-weight:bold;">${formatearQ(p.saldoPendiente)}</td>
             <td style="text-align: center;">${estadoBadge}</td>
             <td style="text-align: center;">
-                ${p.saldoPendiente > 0 ? `<button onclick="abrirModalAbono('${p.id}', '${p.cliente}', ${p.saldoPendiente},${p.montoPagado})" style="background:#2e7d32; color:white; border:none; padding:4px 8px; border-radius:4px; cursor:pointer; font-size:11px;">💵 Abonar</button>` : ''}
+                ${p.saldoPendiente > 0 ? `<button onclick="abrirModalAbono('${p.id}', '${p.cliente}', ${p.saldoPendiente}, ${p.montoPagado})" style="background:#2e7d32; color:white; border:none; padding:4px 8px; border-radius:4px; cursor:pointer; font-size:11px;">💵 Abonar</button>` : ''}
             </td>
         `;
         tablaPagos.appendChild(fila);
@@ -626,7 +632,10 @@ window.abrirModalAbono = (id, cliente, saldo, pagado) => {
     document.getElementById('modal-abono').style.display = 'flex';
 };
 
-window.cerrarModalAbono = () => { document.getElementById('modal-abono').style.display = 'none'; };
+window.cerrarModalAbono = (e) => { 
+    if (e && e.preventDefault) e.preventDefault();
+    document.getElementById('modal-abono').style.display = 'none'; 
+};
 
 document.getElementById('form-abono').addEventListener('submit', async (e) => {
     e.preventDefault();
@@ -759,7 +768,10 @@ window.verDetalleRecibo = (idRecibo) => {
     document.getElementById('modal-ver-recibo').style.display = 'flex';
 };
 
-window.cerrarModalVerRecibo = () => { document.getElementById('modal-ver-recibo').style.display = 'none'; };
+window.cerrarModalVerRecibo = (e) => { 
+    if (e && e.preventDefault) e.preventDefault();
+    document.getElementById('modal-ver-recibo').style.display = 'none'; 
+};
 
 window.reeditarReciboPOS = (idRecibo) => {
     const rec = listaRecibosCache.find(r => r.id === idRecibo);
@@ -787,11 +799,11 @@ function generarPDFReciboIndividual(recibo) {
 
     docPdf.setFont('helvetica', 'bold');
     docPdf.setFontSize(18);
-    docPdf.text("D'MAR BEAUTY HOUSE", 105, 18, { align: 'center' });
+    docPdf.text("D'MAR STYLE SALÓN", 105, 18, { align: 'center' });
 
     docPdf.setFontSize(12);
     docPdf.setFont('helvetica', 'normal');
-    docPdf.text("Comprobante Oficial de Atención", 105, 25, { align: 'center' });
+    docPdf.text("Olga Mendez - Comprobante Oficial", 105, 25, { align: 'center' });
     docPdf.text(`Comprobante No: ${recibo.numRecibo} | Fecha: ${recibo.fecha}`, 105, 31, { align: 'center' });
 
     docPdf.line(14, 35, 196, 35);
@@ -813,7 +825,13 @@ function generarPDFReciboIndividual(recibo) {
         head: [['Tipo', 'Concepto', 'Estilista', 'Cant.', 'Precio', 'Subtotal']],
         body: filas,
         theme: 'striped',
-        headStyles: { fillColor: [212, 175, 55], textColor: [0, 0, 0], fontStyle: 'bold' }
+        headStyles: { fillColor: [212, 175, 55], textColor: [0, 0, 0], fontStyle: 'bold' },
+        didDrawPage: (data) => {
+            // Paginación automática en múltiples páginas
+            let str = 'Página ' + docPdf.internal.getNumberOfPages();
+            docPdf.setFontSize(10);
+            docPdf.text(str, data.settings.margin.left, docPdf.internal.pageSize.height - 10);
+        }
     });
 
     const finalY = docPdf.lastAutoTable.finalY + 10;
@@ -925,6 +943,9 @@ onSnapshot(comisionesRef, (snapshot) => {
         listaComisionesCache.push({ id: docSnapshot.id, ...docSnapshot.data() });
     });
 
+    // Ordenar comisiones cronológicamente (más antiguo a más reciente para el reporte ordenado)
+    listaComisionesCache.sort((a, b) => (a.timestamp || 0) - (b.timestamp || 0));
+
     renderizarControlEstilistas();
 });
 
@@ -1026,7 +1047,7 @@ function generarPDFComisionesEstilistas() {
 
     docPdf.setFont('helvetica', 'bold');
     docPdf.setFontSize(18);
-    docPdf.text("D'MAR BEAUTY HOUSE", 105, 18, { align: 'center' });
+    docPdf.text("D'MAR STYLE SALÓN", 105, 18, { align: 'center' });
 
     docPdf.setFontSize(12);
     docPdf.setFont('helvetica', 'normal');
@@ -1050,7 +1071,12 @@ function generarPDFComisionesEstilistas() {
         head: [['Fecha', 'Estilista', 'Servicio', 'Cliente', 'Precio Total', 'Comisión 30%']],
         body: filas,
         theme: 'striped',
-        headStyles: { fillColor: [230, 81, 0], textColor: [255, 255, 255], fontStyle: 'bold' }
+        headStyles: { fillColor: [230, 81, 0], textColor: [255, 255, 255], fontStyle: 'bold' },
+        didDrawPage: (data) => {
+            let str = 'Página ' + docPdf.internal.getNumberOfPages();
+            docPdf.setFontSize(10);
+            docPdf.text(str, data.settings.margin.left, docPdf.internal.pageSize.height - 10);
+        }
     });
 
     docPdf.save(`Comisiones_Estilistas_${hoy.replace(/\//g, '-')}.pdf`);
@@ -1198,6 +1224,9 @@ onSnapshot(ventasRef, (snapshot) => {
         listaVentasCache.push({ id: docSnapshot.id, ...docSnapshot.data() });
     });
 
+    // Ordenar ventas diarias cronológicamente (más antiguo al inicio, más reciente al final para el reporte)
+    listaVentasCache.sort((a, b) => (a.timestamp || 0) - (b.timestamp || 0));
+
     renderizarVentas(listaVentasCache);
 });
 
@@ -1281,7 +1310,7 @@ function generarPDFCierreCajaDiario() {
 
     docPdf.setFont('helvetica', 'bold');
     docPdf.setFontSize(18);
-    docPdf.text("D'MAR BEAUTY HOUSE", 105, 18, { align: 'center' });
+    docPdf.text("D'MAR STYLE SALÓN", 105, 18, { align: 'center' });
 
     docPdf.setFontSize(12);
     docPdf.setFont('helvetica', 'normal');
@@ -1293,9 +1322,15 @@ function generarPDFCierreCajaDiario() {
         head: [['Fecha y Hora', 'Concepto / Trabajo', 'Cliente / Atendió', 'Método', 'Monto']],
         body: filas,
         theme: 'striped',
-        headStyles: { fillColor: [46, 125, 50], textColor: [255, 255, 255], fontStyle: 'bold' }
+        headStyles: { fillColor: [46, 125, 50], textColor: [255, 255, 255], fontStyle: 'bold' },
+        didDrawPage: (data) => {
+            let str = 'Página ' + docPdf.internal.getNumberOfPages();
+            docPdf.setFontSize(10);
+            docPdf.text(str, data.settings.margin.left, docPdf.internal.pageSize.height - 10);
+        }
     });
 
+    // Se calcula la posición final respetando las páginas automáticas generadas
     const finalY = docPdf.lastAutoTable.finalY + 10;
 
     docPdf.setFont('helvetica', 'bold');
@@ -1315,44 +1350,66 @@ function generarPDFCierreCajaDiario() {
 }
 
 // REGISTRO DE GASTO
-window.abrirModalGasto = () => {
+window.abrirModalGasto = (e) => {
+    if (e && e.preventDefault) e.preventDefault();
+    if (e && e.stopPropagation) e.stopPropagation();
+
     document.getElementById('gasto-concepto').value = '';
     document.getElementById('gasto-monto').value = '';
-    document.getElementById('modal-gasto').style.display = 'flex';
+    const modalGasto = document.getElementById('modal-gasto');
+    if (modalGasto) {
+        modalGasto.style.display = 'flex';
+    }
 };
 
-window.cerrarModalGasto = () => { document.getElementById('modal-gasto').style.display = 'none'; };
+window.cerrarModalGasto = (e) => { 
+    if (e && e.preventDefault) e.preventDefault();
+    const modalGasto = document.getElementById('modal-gasto');
+    if (modalGasto) {
+        modalGasto.style.display = 'none';
+    }
+};
 
-document.getElementById('form-gasto').addEventListener('submit', async (e) => {
-    e.preventDefault();
-    const concepto = document.getElementById('gasto-concepto').value.trim().toUpperCase();
-    const monto = parseFloat(document.getElementById('gasto-monto').value) || 0;
-    const origen = document.getElementById('gasto-origen').value;
+const formGastoElem = document.getElementById('form-gasto');
+if (formGastoElem) {
+    formGastoElem.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        e.stopPropagation();
 
-    if (monto <= 0) return;
+        const concepto = document.getElementById('gasto-concepto').value.trim().toUpperCase();
+        const monto = parseFloat(document.getElementById('gasto-monto').value) || 0;
+        const origen = document.getElementById('gasto-origen').value;
 
-    const ahora = new Date();
-    const fechaStr = ahora.toLocaleDateString() + ' ' + ahora.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-    const mesAnioStr = ahora.toLocaleDateString('es-ES', { month: 'long', year: 'numeric' }).toUpperCase();
+        if (monto <= 0) {
+            mostrarNotificacion('⚠️ Ingrese un monto válido mayor a Q0.00', 'error');
+            return;
+        }
 
-    const gastoData = {
-        tipo: 'GASTO',
-        concepto: `GASTO: ${concepto}`,
-        cliente: 'SISTEMA',
-        monto: monto,
-        metodo: origen,
-        fecha: fechaStr,
-        mesAnio: mesAnioStr,
-        timestamp: ahora.getTime()
-    };
+        const ahora = new Date();
+        const fechaStr = ahora.toLocaleDateString() + ' ' + ahora.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        const mesAnioStr = ahora.toLocaleDateString('es-ES', { month: 'long', year: 'numeric' }).toUpperCase();
 
-    try {
-        await addDoc(ventasRef, gastoData);
-        await addDoc(permanenteRef, gastoData);
-        cerrarModalGasto();
-        mostrarNotificacion(`💸 Gasto de ${formatearQ(monto)} registrado.`, 'exito');
-    } catch (error) { mostrarNotificacion('❌ Error al registrar el gasto.', 'error'); }
-});
+        const gastoData = {
+            tipo: 'GASTO',
+            concepto: `GASTO: ${concepto}`,
+            cliente: 'SISTEMA',
+            monto: monto,
+            metodo: origen,
+            fecha: fechaStr,
+            mesAnio: mesAnioStr,
+            timestamp: ahora.getTime()
+        };
+
+        try {
+            await addDoc(ventasRef, gastoData);
+            await addDoc(permanenteRef, gastoData);
+            cerrarModalGasto();
+            mostrarNotificacion(`💸 Gasto de ${formatearQ(monto)} registrado correctamente.`, 'exito');
+        } catch (error) { 
+            mostrarNotificacion('❌ Error al registrar el gasto.', 'error'); 
+        }
+    });
+}
 
 // MODALES EDICIONES PRODUCTOS Y SERVICIOS
 window.abrirModalEdicion = (id, codigo, nombre, precio, stock) => {
@@ -1363,7 +1420,10 @@ window.abrirModalEdicion = (id, codigo, nombre, precio, stock) => {
     document.getElementById('edit-stock').value = stock;
     document.getElementById('modal-edicion').style.display = 'flex';
 };
-window.cerrarModalEdicion = () => document.getElementById('modal-edicion').style.display = 'none';
+window.cerrarModalEdicion = (e) => {
+    if (e && e.preventDefault) e.preventDefault();
+    document.getElementById('modal-edicion').style.display = 'none';
+};
 
 document.getElementById('form-editar').addEventListener('submit', async (e) => {
     e.preventDefault();
@@ -1384,7 +1444,10 @@ window.abrirModalEdicionServicio = (id, nombre, precio) => {
     document.getElementById('edit-serv-precio').value = precio;
     document.getElementById('modal-edicion-servicio').style.display = 'flex';
 };
-window.cerrarModalEdicionServicio = () => document.getElementById('modal-edicion-servicio').style.display = 'none';
+window.cerrarModalEdicionServicio = (e) => {
+    if (e && e.preventDefault) e.preventDefault();
+    document.getElementById('modal-edicion-servicio').style.display = 'none';
+};
 
 document.getElementById('form-editar-servicio').addEventListener('submit', async (e) => {
     e.preventDefault();
