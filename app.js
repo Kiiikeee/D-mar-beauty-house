@@ -1203,7 +1203,7 @@ if (document.getElementById('buscador-permanente')) {
     document.getElementById('buscador-permanente').addEventListener('input', renderizarHistorialPermanente);
 }
 
-// CIERRE GENERAL POR MESES DEL HISTORIAL PERMANENTE (CON DESGLOSE AVANZADO PARA LA CLIENTA)
+// CIERRE GENERAL POR MESES DEL HISTORIAL PERMANENTE (LÓGICA AJUSTADA A SOLICITUD DE LA CLIENTA)
 window.generarPDFCierreMensualPermanente = () => {
     const selectMes = document.getElementById('select-mes-permanente');
     if (!selectMes || !selectMes.value) {
@@ -1258,7 +1258,6 @@ window.generarPDFCierreMensualPermanente = () => {
                     totalServicios += montoVal;
                     totalComisionesEstilistas += (montoVal * 0.30);
                 } else if (tipoReg === 'PRODUCTO' || conceptoReg.includes('PRODUCTO') || (!conceptoReg.includes('ABONO'))) {
-                    // Clasificación automática de productos o ingresos generales
                     if (!conceptoReg.includes('ABONO')) {
                         totalProductos += montoVal;
                     }
@@ -1282,14 +1281,13 @@ window.generarPDFCierreMensualPermanente = () => {
             return mesPago.includes(mesSeleccionado) || mesSeleccionado.split(' ').every(palabra => mesPago.includes(palabra));
         });
 
-        let totalCreditosOtorgados = 0;
         let totalSaldosPendientesCobro = 0;
         creditosMes.forEach(c => {
-            totalCreditosOtorgados += (parseFloat(c.montoTotal) || 0);
             totalSaldosPendientesCobro += (parseFloat(c.saldoPendiente) || 0);
         });
 
-        const balanceNeto = totalIngresosBrutos - totalGastos;
+        // BALANCE NETO FINAL: Se restan del ingreso bruto: Gastos, Comisiones de Estilistas y Saldos Pendientes (Deudas)
+        const balanceNetoFinal = totalIngresosBrutos - totalGastos - totalComisionesEstilistas - totalSaldosPendientesCobro;
 
         docPdf.setFont('helvetica', 'bold');
         docPdf.setFontSize(18);
@@ -1315,7 +1313,6 @@ window.generarPDFCierreMensualPermanente = () => {
 
         let finalY = docPdf.lastAutoTable.finalY + 10;
         
-        // Verificamos espacio en página para el resumen
         if (finalY > 230) {
             docPdf.addPage();
             finalY = 20;
@@ -1330,17 +1327,16 @@ window.generarPDFCierreMensualPermanente = () => {
         docPdf.text(`· Total Ingresos por Servicios: ${formatearQ(totalServicios)}`, 14, finalY + 6);
         docPdf.text(`· Total Ingresos por Productos: ${formatearQ(totalProductos)}`, 14, finalY + 12);
         docPdf.text(`· Ingresos Brutos Totales: ${formatearQ(totalIngresosBrutos)}`, 14, finalY + 18);
-        docPdf.text(`· Total Créditos Otorgados (Fiado): ${formatearQ(totalCreditosOtorgados)}`, 14, finalY + 24);
-        docPdf.text(`· Saldos Pendientes de Cobro (Para el próximo mes): ${formatearQ(totalSaldosPendientesCobro)}`, 14, finalY + 30);
-        docPdf.text(`· Acumulado Comisiones Estilistas (30%): ${formatearQ(totalComisionesEstilistas)}`, 14, finalY + 36);
-        docPdf.text(`· Total Gastos / Salidas de Caja: ${formatearQ(totalGastos)}`, 14, finalY + 42);
+        docPdf.text(`· Cuentas por Cobrar (Saldos Pendientes): ${formatearQ(totalSaldosPendientesCobro)}`, 14, finalY + 24);
+        docPdf.text(`· Acumulado Comisiones Estilistas (30%): ${formatearQ(totalComisionesEstilistas)}`, 14, finalY + 30);
+        docPdf.text(`· Total Gastos / Salidas de Caja: ${formatearQ(totalGastos)}`, 14, finalY + 36);
 
         docPdf.setFont('helvetica', 'bold');
         docPdf.setFontSize(11);
-        docPdf.text(`· BALANCE NETO FINAL: ${formatearQ(balanceNeto)}`, 14, finalY + 50);
+        docPdf.text(`· BALANCE NETO FINAL: ${formatearQ(balanceNetoFinal)}`, 14, finalY + 44);
 
         docPdf.save(`Cierre_Avanzado_${mesSeleccionado.replace(/\s+/g, '_')}_DMar.pdf`);
-        mostrarNotificacion('✨ PDF Mensual con desglose completo generado.', 'exito');
+        mostrarNotificacion('✨ PDF Mensual con desglose y balance ajustado generado.', 'exito');
     });
 };
 
