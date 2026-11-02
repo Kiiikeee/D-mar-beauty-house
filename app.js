@@ -668,6 +668,18 @@ document.getElementById('form-abono').addEventListener('submit', async (e) => {
             historialAbonos: historialAbonosAct
         });
 
+        // SINCRONIZACIÓN AUTOMÁTICA CON RECIBOS DE HISTORIAL SI SE SALDÓ
+        if (nuevoSaldo <= 0 && pagoDoc.numRecibo) {
+            const qRecibo = query(recibosRef, where("numRecibo", "==", pagoDoc.numRecibo));
+            const snapRecibo = await getDocs(qRecibo);
+            snapRecibo.forEach(async (docRec) => {
+                await updateDoc(doc(db, "recibos_historial", docRec.id), {
+                    saldoPendiente: 0,
+                    estadoPago: 'PAGADO'
+                });
+            });
+        }
+
         const abonoTransaccion = {
             numRecibo: pagoDoc.numRecibo || 'ABONO',
             tipo: 'ABONO DEUDA',
@@ -827,7 +839,6 @@ function generarPDFReciboIndividual(recibo) {
         theme: 'striped',
         headStyles: { fillColor: [212, 175, 55], textColor: [0, 0, 0], fontStyle: 'bold' },
         didDrawPage: (data) => {
-            // Paginación automática en múltiples páginas
             let str = 'Página ' + docPdf.internal.getNumberOfPages();
             docPdf.setFontSize(10);
             docPdf.text(str, data.settings.margin.left, docPdf.internal.pageSize.height - 10);
@@ -859,12 +870,16 @@ onSnapshot(productosRef, (snapshot) => {
 
 function renderizarProductos(productos) {
     tablaProductos.innerHTML = '';
-    if (productos.length === 0) {
-        tablaProductos.innerHTML = `<tr><td colspan="5" style="text-align: center; color: #888;">No hay productos.</td></tr>`;
+    const textoBuscador = document.getElementById('buscador-productos') ? document.getElementById('buscador-productos').value.toLowerCase().trim() : '';
+
+    const filtrados = productos.filter(p => !textoBuscador || (p.nombre || '').toLowerCase().includes(textoBuscador) || (p.codigo || '').toLowerCase().includes(textoBuscador));
+
+    if (filtrados.length === 0) {
+        tablaProductos.innerHTML = `<tr><td colspan="5" style="text-align: center; color: #888;">No se encontraron productos.</td></tr>`;
         return;
     }
 
-    productos.forEach((prod) => {
+    filtrados.forEach((prod) => {
         const fila = document.createElement('tr');
         fila.innerHTML = `
             <td><strong style="color: var(--accent-color);">${prod.codigo}</strong></td>
@@ -877,6 +892,10 @@ function renderizarProductos(productos) {
         `;
         tablaProductos.appendChild(fila);
     });
+}
+
+if (document.getElementById('buscador-productos')) {
+    document.getElementById('buscador-productos').addEventListener('input', () => renderizarProductos(listaProductosCache));
 }
 
 document.getElementById('form-producto').addEventListener('submit', async (e) => {
@@ -906,12 +925,16 @@ onSnapshot(serviciosRef, (snapshot) => {
 
 function renderizarServicios(servicios) {
     tablaServicios.innerHTML = '';
-    if (servicios.length === 0) {
-        tablaServicios.innerHTML = `<tr><td colspan="3" style="text-align: center; color: #888;">No hay servicios registrados.</td></tr>`;
+    const textoBuscador = document.getElementById('buscador-servicios') ? document.getElementById('buscador-servicios').value.toLowerCase().trim() : '';
+
+    const filtrados = servicios.filter(s => !textoBuscador || (s.nombre || '').toLowerCase().includes(textoBuscador));
+
+    if (filtrados.length === 0) {
+        tablaServicios.innerHTML = `<tr><td colspan="3" style="text-align: center; color: #888;">No se encontraron servicios.</td></tr>`;
         return;
     }
 
-    servicios.forEach((s) => {
+    filtrados.forEach((s) => {
         const fila = document.createElement('tr');
         fila.innerHTML = `
             <td><strong>${s.nombre}</strong></td>
@@ -922,6 +945,10 @@ function renderizarServicios(servicios) {
         `;
         tablaServicios.appendChild(fila);
     });
+}
+
+if (document.getElementById('buscador-servicios')) {
+    document.getElementById('buscador-servicios').addEventListener('input', () => renderizarServicios(listaServiciosCache));
 }
 
 document.getElementById('form-servicio').addEventListener('submit', async (e) => {
@@ -943,9 +970,7 @@ onSnapshot(comisionesRef, (snapshot) => {
         listaComisionesCache.push({ id: docSnapshot.id, ...docSnapshot.data() });
     });
 
-    // Ordenar comisiones cronológicamente (más antiguo a más reciente para el reporte ordenado)
     listaComisionesCache.sort((a, b) => (a.timestamp || 0) - (b.timestamp || 0));
-
     renderizarControlEstilistas();
 });
 
@@ -1082,7 +1107,7 @@ function generarPDFComisionesEstilistas() {
     docPdf.save(`Comisiones_Estilistas_${hoy.replace(/\//g, '-')}.pdf`);
 }
 
-// HISTORIAL PERMANENTE DE TRANSACCIONES
+// HISTORIAL PERMANENTE DE TRANSACCIONES & CIERRE MENSUAL
 onSnapshot(permanenteRef, (snapshot) => {
     listaPermanenteCache = [];
     snapshot.forEach((docSnapshot) => {
@@ -1105,7 +1130,8 @@ function renderizarHistorialPermanente() {
         return (r.concepto || '').toLowerCase().includes(texto) ||
                (r.cliente || '').toLowerCase().includes(texto) ||
                (r.estilista || '').toLowerCase().includes(texto) ||
-               (r.fecha || '').toLowerCase().includes(texto);
+               (r.fecha || '').toLowerCase().includes(texto) ||
+               (r.mesAnio || '').toLowerCase().includes(texto);
     });
 
     if (filtrados.length === 0) {
@@ -1155,6 +1181,91 @@ function renderizarHistorialPermanente() {
 if (document.getElementById('buscador-permanente')) {
     document.getElementById('buscador-permanente').addEventListener('input', renderizarHistorialPermanente);
 }
+
+// FUNCIÓN PARA CIERRE GENERAL POR MESES DEL HISTORIAL PERMANENTE (SIN BORRAR NADA)
+window.generarPDFCierreMensualPermanente = () => {
+    const selectMes = document.getElementById('select-mes-permanente');
+    if (!selectMes || !selectMes.value) {
+        mostrarNotificacion('⚠️ Seleccione un mes válido para el cierre.', 'error');
+        return;
+    }
+
+    const mesSeleccionado = selectMes.value.toUpperCase();
+    const registrosMes = listaPermanenteCache.filter(r => (r.mesAnio || '').toUpperCase() === mesSeleccionado);
+
+    if (registrosMes.length === 0) {
+        mostrarNotificacion(`⚠️ No hay registros para el mes de ${mesSeleccionado}.`, 'error');
+        return;
+    }
+
+    confirmarAccion(`¿Generar reporte PDF del Historial Permanente para el mes de ${mesSeleccionado}? (Los datos no se borrarán).`, () => {
+        const jsPDFLib = window.jspdf ? window.jspdf.jsPDF : window.jsPDF;
+        if (!jsPDFLib) {
+            mostrarNotificacion('❌ Cargando librería PDF... Intente en 3 segundos.', 'error');
+            return;
+        }
+
+        const docPdf = new jsPDFLib();
+        let totalIngresos = 0, totalGastos = 0;
+
+        const filas = registrosMes.map(r => {
+            const montoVal = parseFloat(r.monto) || 0;
+            if (r.tipo === 'GASTO') {
+                totalGastos += montoVal;
+            } else {
+                totalIngresos += montoVal;
+            }
+
+            return [
+                r.fecha || '',
+                r.tipo || 'INGRESO',
+                (r.concepto || '').toUpperCase(),
+                (r.cliente || 'N/A').toUpperCase(),
+                (r.estilista || 'N/A').toUpperCase(),
+                r.metodo || 'Efectivo',
+                `${r.tipo === 'GASTO' ? '-' : ''}${formatearQ(montoVal)}`
+            ];
+        });
+
+        const balanceNeto = totalIngresos - totalGastos;
+
+        docPdf.setFont('helvetica', 'bold');
+        docPdf.setFontSize(18);
+        docPdf.text("D'MAR STYLE SALÓN", 105, 18, { align: 'center' });
+
+        docPdf.setFontSize(12);
+        docPdf.setFont('helvetica', 'normal');
+        docPdf.text(`Cierre Mensual Historial Permanente - ${mesSeleccionado}`, 105, 25, { align: 'center' });
+        docPdf.line(14, 29, 196, 29);
+
+        docPdf.autoTable({
+            startY: 34,
+            head: [['Fecha', 'Tipo', 'Concepto', 'Clienta', 'Estilista', 'Método', 'Monto']],
+            body: filas,
+            theme: 'striped',
+            headStyles: { fillColor: [100, 50, 150], textColor: [255, 255, 255], fontStyle: 'bold' },
+            didDrawPage: (data) => {
+                let str = 'Página ' + docPdf.internal.getNumberOfPages();
+                docPdf.setFontSize(10);
+                docPdf.text(str, data.settings.margin.left, docPdf.internal.pageSize.height - 10);
+            }
+        });
+
+        const finalY = docPdf.lastAutoTable.finalY + 10;
+        docPdf.setFont('helvetica', 'bold');
+        docPdf.setFontSize(11);
+        docPdf.text(`RESUMEN GENERAL DEL MES (${mesSeleccionado}):`, 14, finalY);
+
+        docPdf.setFont('helvetica', 'normal');
+        docPdf.text(`· Total Ingresos Brutos: ${formatearQ(totalIngresos)}`, 14, finalY + 6);
+        docPdf.text(`· Total Gastos / Salidas: ${formatearQ(totalGastos)}`, 14, finalY + 12);
+        docPdf.setFont('helvetica', 'bold');
+        docPdf.text(`· BALANCE NETO: ${formatearQ(balanceNeto)}`, 14, finalY + 20);
+
+        docPdf.save(`Cierre_Permanente_${mesSeleccionado.replace(/\s+/g, '_')}_DMar.pdf`);
+        mostrarNotificacion('✨ PDF Mensual generado correctamente.', 'exito');
+    });
+};
 
 // CORRECCIONES & ANULACIÓN COMPLETA
 function renderizarTablaCorrecciones() {
@@ -1224,9 +1335,7 @@ onSnapshot(ventasRef, (snapshot) => {
         listaVentasCache.push({ id: docSnapshot.id, ...docSnapshot.data() });
     });
 
-    // Ordenar ventas diarias cronológicamente (más antiguo al inicio, más reciente al final para el reporte)
     listaVentasCache.sort((a, b) => (a.timestamp || 0) - (b.timestamp || 0));
-
     renderizarVentas(listaVentasCache);
 });
 
@@ -1330,7 +1439,6 @@ function generarPDFCierreCajaDiario() {
         }
     });
 
-    // Se calcula la posición final respetando las páginas automáticas generadas
     const finalY = docPdf.lastAutoTable.finalY + 10;
 
     docPdf.setFont('helvetica', 'bold');

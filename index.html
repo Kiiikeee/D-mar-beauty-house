@@ -3,10 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>D'Mar Beauty House - Gestión de Salón & Servicios</title>
+    <title>D'Mar Style Salón - Olga Mendez</title>
     
-    <link rel="icon" type="image/jpeg" href="logo.jpg">
-    <link rel="apple-touch-icon" href="logo.jpg">
+    <link rel="icon" type="image/jpeg" href="logo.jpg?v=2">
+    <link rel="apple-touch-icon" href="logo.jpg?v=2">
     <link rel="stylesheet" href="style.css">
 
     <!-- LIBRERÍAS PARA GENERACIÓN DE PDF -->
@@ -19,7 +19,7 @@
     <div id="sidebar-overlay" class="sidebar-overlay" onclick="toggleMenu()"></div>
     <aside id="sidebar" class="sidebar">
         <div class="sidebar-header">
-            <img src="logo.jpg" alt="D'Mar Logo" class="sidebar-logo">
+            <img src="logo.jpg?v=2" alt="D'Mar Logo" class="sidebar-logo">
             <button class="btn-close-menu" onclick="toggleMenu()">✕</button>
         </div>
         <nav class="sidebar-nav">
@@ -52,7 +52,7 @@
             </button>
         </nav>
         <div class="sidebar-footer">
-            <p>D'Mar Beauty House © 2026 | <span style="color: var(--accent-color); font-weight: bold;">v1.5.3</span></p>
+            <p>D'Mar Style Salón © 2026 | <span style="color: var(--accent-color); font-weight: bold;">v1.5.5</span></p>
         </div>
     </aside>
 
@@ -62,7 +62,7 @@
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
         </button>
         <div class="header-brand">
-            <img src="logo.jpg" alt="Logo" class="header-logo-img">
+            <img src="logo.jpg?v=2" alt="Logo" class="header-logo-img">
             <h1 class="header-title" id="header-seccion-titulo">Ficha de Atención de Salón</h1>
         </div>
 
@@ -94,8 +94,8 @@
                     </div>
 
                     <div style="display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 15px;">
-                        <button class="btn-primary" onclick="abrirModalAgregarServicioPOS()" style="flex: 1; background: linear-gradient(135deg, #e8a5c8, #c4739e); color: black;">💇‍♀️ + Agregar Servicio</button>
-                        <button class="btn-primary" onclick="abrirModalAgregarProductoPOS()" style="flex: 1; background: linear-gradient(135deg, #d4af37, #b89628); color: black;">📦 + Agregar Producto</button>
+                        <button class="btn-primary" onclick="abrirModalAgregarServicioPOS(event)" style="flex: 1; background: linear-gradient(135deg, #e8a5c8, #c4739e); color: black;">💇‍♀️ + Agregar Servicio</button>
+                        <button class="btn-primary" onclick="abrirModalAgregarProductoPOS(event)" style="flex: 1; background: linear-gradient(135deg, #d4af37, #b89628); color: black;">📦 + Agregar Producto</button>
                     </div>
 
                     <div class="table-responsive">
@@ -336,7 +336,7 @@
             <!-- SECCIÓN: HISTORIAL DIARIO & CAJA -->
             <div id="seccion-reportes" class="app-section" style="display: none;">
                 <div style="display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap;">
-                    <button class="btn-primary" onclick="abrirModalGasto()" style="flex: 1; background: linear-gradient(135deg, #e65100, #ef6c00); color: white;">💸 Registrar Gasto / Salida</button>
+                    <button class="btn-primary" onclick="abrirModalGasto(event)" style="flex: 1; background: linear-gradient(135deg, #e65100, #ef6c00); color: white;">💸 Registrar Gasto / Salida</button>
                     <button class="btn-primary" onclick="procesarCierreCaja()" style="flex: 1; background: linear-gradient(135deg, #2e7d32, #1b5e20); color: white;">🔒 Confirmar Cierre de Caja & PDF</button>
                 </div>
 
@@ -382,9 +382,25 @@
 
             <!-- SECCIÓN: HISTORIAL MENSUAL PERMANENTE -->
             <div id="seccion-permanente" class="app-section" style="display: none;">
+                <div style="background: rgba(100, 50, 150, 0.1); border: 1px solid var(--border-color); padding: 15px; border-radius: 10px; margin-bottom: 20px; display: flex; gap: 15px; align-items: center; flex-wrap: wrap;">
+                    <div style="flex: 1;">
+                        <h3 style="color: var(--accent-color); margin: 0 0 4px 0; font-size: 1rem;">📅 Cierre General por Meses (Historial Permanente)</h3>
+                        <p style="color: var(--text-muted); font-size: 0.85rem; margin: 0;">Seleccione el mes y descargue el reporte en PDF multi-página sin eliminar ningún dato del historial.</p>
+                    </div>
+                    <div style="display: flex; gap: 8px; align-items: center;">
+                        <select id="select-mes-permanente" style="padding: 8px; border-radius: 6px; background: #222; color: #fff; border: 1px solid var(--border-color);">
+                            <option value="OCTUBRE 2026">OCTUBRE 2026</option>
+                            <option value="NOVIEMBRE 2026" selected>NOVIEMBRE 2026</option>
+                            <option value="DICIEMBRE 2026">DICIEMBRE 2026</option>
+                            <option value="ENERO 2027">ENERO 2027</option>
+                        </select>
+                        <button class="btn-primary" onclick="generarPDFCierreMensualPermanente()" style="background: linear-gradient(135deg, #7b1fa2, #4a148c); color: white;">📄 Generar PDF Mensual</button>
+                    </div>
+                </div>
+
                 <div class="section-header-flex">
                     <h2>Historial Permanente de Transacciones</h2>
-                    <input type="text" id="buscador-permanente" placeholder="🔍 Buscar registro histórico..." class="search-input">
+                    <input type="text" id="buscador-permanente" placeholder="🔍 Buscar registro histórico (ej: Octubre, María)..." class="search-input">
                 </div>
 
                 <div id="contenedor-historial-permanente"></div>
@@ -429,18 +445,19 @@
         <div class="modal-content" style="max-width: 520px;">
             <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 10px; margin-bottom: 15px;">
                 <h3 style="margin: 0; color: var(--accent-color);">🔔 Novedades & Versiones</h3>
-                <span style="background: var(--accent-color); color: #000; font-weight: bold; padding: 2px 8px; border-radius: 12px; font-size: 0.75rem;">v1.5.3</span>
+                <span style="background: var(--accent-color); color: #000; font-weight: bold; padding: 2px 8px; border-radius: 12px; font-size: 0.75rem;">v1.5.5</span>
             </div>
 
             <div style="max-height: 320px; overflow-y: auto; display: flex; flex-direction: column; gap: 15px; padding-right: 5px;">
                 <div style="background: rgba(255,255,255,0.03); border: 1px solid var(--border-color); border-radius: 8px; padding: 12px;">
                     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
-                        <strong style="color: #81c784; font-size: 0.95rem;">Versión 1.5.3 (Actual)</strong>
-                        <small style="color: var(--text-muted);">Octubre 2026</small>
+                        <strong style="color: #81c784; font-size: 0.95rem;">Versión 1.5.5 (Actual)</strong>
+                        <small style="color: var(--text-muted);">Actualización</small>
                     </div>
                     <ul style="font-size: 0.83rem; color: var(--text-light); padding-left: 18px; line-height: 1.5;">
-                        <li><strong>Detección Exacta de Precio de Producto</strong>: Corrección en la vinculación de precios del inventario al seleccionar productos, evitando precios en Q0.00.</li>
-                        <li><strong>Autocompletado & Multiplicador Automático</strong>: Multiplicación instantánea de subtotal en tiempo real al ajustar cantidad.</li>
+                        <li><strong>Buscadores Activos</strong>: Corrección en los buscadores de Inventario y Servicios.</li>
+                        <li><strong>Sincronización de Deudas</strong>: Al saldar una deuda por completo, se actualiza automáticamente el recibo a "PAGADO" y desaparece de pendientes.</li>
+                        <li><strong>Cierre Mensual Historial Permanente</strong>: Nuevo botón y selector de meses para generar reportes PDF multi-página sin borrar registros.</li>
                     </ul>
                 </div>
             </div>
@@ -467,7 +484,7 @@
                 <input type="number" step="0.01" id="pos-item-precio-serv" placeholder="Se llena automáticamente">
 
                 <div class="modal-actions">
-                    <button type="button" class="btn-cancel" onclick="cerrarModalAgregarServicioPOS()">Cancelar</button>
+                    <button type="button" class="btn-cancel" onclick="cerrarModalAgregarServicioPOS(event)">Cancelar</button>
                     <button type="submit" class="btn-primary">Añadir a la Ficha</button>
                 </div>
             </form>
@@ -490,7 +507,7 @@
                 <input type="number" step="0.01" id="pos-item-precio-prod" placeholder="Se calcula automáticamente">
 
                 <div class="modal-actions">
-                    <button type="button" class="btn-cancel" onclick="cerrarModalAgregarProductoPOS()">Cancelar</button>
+                    <button type="button" class="btn-cancel" onclick="cerrarModalAgregarProductoPOS(event)">Cancelar</button>
                     <button type="submit" class="btn-primary">Añadir a la Ficha</button>
                 </div>
             </form>
@@ -523,7 +540,7 @@
             </div>
 
             <div class="modal-actions" style="margin-top: 15px;">
-                <button type="button" class="btn-cancel" onclick="cerrarModalVerRecibo()">Cerrar</button>
+                <button type="button" class="btn-cancel" onclick="cerrarModalVerRecibo(event)">Cerrar</button>
                 <button type="button" id="btn-reimprimir-recibo" class="btn-primary" style="background: linear-gradient(135deg, #1976D2, #115293); color: white;">📄 Descargar PDF</button>
             </div>
         </div>
@@ -547,7 +564,7 @@
                 </select>
 
                 <div class="modal-actions">
-                    <button type="button" class="btn-cancel" onclick="cerrarModalGasto()">Cancelar</button>
+                    <button type="button" class="btn-cancel" onclick="cerrarModalGasto(event)">Cancelar</button>
                     <button type="submit" class="btn-primary" style="background: linear-gradient(135deg, #e65100, #ef6c00); color: white;">Registrar Gasto</button>
                 </div>
             </form>
@@ -573,7 +590,7 @@
                 </select>
 
                 <div class="modal-actions">
-                    <button type="button" class="btn-cancel" onclick="cerrarModalAbono()">Cancelar</button>
+                    <button type="button" class="btn-cancel" onclick="cerrarModalAbono(event)">Cancelar</button>
                     <button type="submit" class="btn-primary" style="background: linear-gradient(135deg, #2e7d32, #1b5e20); color: white;">Registrar Abono</button>
                 </div>
             </form>
@@ -613,7 +630,7 @@
                 <input type="number" id="edit-stock" required>
 
                 <div class="modal-actions">
-                    <button type="button" class="btn-cancel" onclick="cerrarModalEdicion()">Cancelar</button>
+                    <button type="button" class="btn-cancel" onclick="cerrarModalEdicion(event)">Cancelar</button>
                     <button type="submit" class="btn-primary" id="btn-guardar-edit">Guardar Cambios</button>
                 </div>
             </form>
@@ -633,7 +650,7 @@
                 <input type="number" step="0.01" id="edit-serv-precio" required>
 
                 <div class="modal-actions">
-                    <button type="button" class="btn-cancel" onclick="cerrarModalEdicionServicio()">Cancelar</button>
+                    <button type="button" class="btn-cancel" onclick="cerrarModalEdicionServicio(event)">Cancelar</button>
                     <button type="submit" class="btn-primary">Guardar Cambios</button>
                 </div>
             </form>
