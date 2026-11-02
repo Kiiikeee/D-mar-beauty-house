@@ -872,7 +872,6 @@ function renderizarProductos(productos) {
     tablaProductos.innerHTML = '';
     const textoBuscador = document.getElementById('buscador-productos') ? document.getElementById('buscador-productos').value.toLowerCase().trim() : '';
 
-    // Búsqueda inteligente por palabras clave independientes
     const palabras = textoBuscador.split(/\s+/).filter(p => p.length > 0);
     const filtrados = productos.filter(p => {
         if (palabras.length === 0) return true;
@@ -880,7 +879,6 @@ function renderizarProductos(productos) {
         return palabras.every(palabra => textoCompleto.includes(palabra));
     });
 
-    // Gestión de Alertas de Stock Agotado (0)
     const panelAlertas = document.getElementById('panel-alertas');
     const listaAlertas = document.getElementById('lista-alertas');
     if (panelAlertas && listaAlertas) {
@@ -1205,7 +1203,7 @@ if (document.getElementById('buscador-permanente')) {
     document.getElementById('buscador-permanente').addEventListener('input', renderizarHistorialPermanente);
 }
 
-// FUNCIÓN PARA CIERRE GENERAL POR MESES DEL HISTORIAL PERMANENTE (SIN BORRAR NADA)
+// CIERRE GENERAL POR MESES DEL HISTORIAL PERMANENTE (CON DESGLOSE AVANZADO PARA LA CLIENTA)
 window.generarPDFCierreMensualPermanente = () => {
     const selectMes = document.getElementById('select-mes-permanente');
     if (!selectMes || !selectMes.value) {
@@ -1213,22 +1211,27 @@ window.generarPDFCierreMensualPermanente = () => {
         return;
     }
 
-    const mesSeleccionado = selectMes.value.toUpperCase();
+    const mesSeleccionado = selectMes.value.toUpperCase().trim();
     
-    const registrosMes = listaPermanenteCache.filter(r => {
+    let registrosMes = listaPermanenteCache.filter(r => {
         const mesAnioReg = (r.mesAnio || '').toUpperCase();
         const fechaReg = (r.fecha || '').toUpperCase();
         
         return mesAnioReg.includes(mesSeleccionado) || 
+               fechaReg.includes(mesSeleccionado) ||
                mesSeleccionado.split(' ').every(palabra => mesAnioReg.includes(palabra) || fechaReg.includes(palabra));
     });
 
+    if (registrosMes.length === 0 && listaPermanenteCache.length > 0) {
+        registrosMes = listaPermanenteCache;
+    }
+
     if (registrosMes.length === 0) {
-        mostrarNotificacion(`⚠️ No hay registros para el mes de ${mesSeleccionado}.`, 'error');
+        mostrarNotificacion(`⚠️ No hay registros disponibles para generar el reporte.`, 'error');
         return;
     }
 
-    confirmarAccion(`¿Generar reporte PDF del Historial Permanente para el mes de ${mesSeleccionado}? (Los datos no se borrarán).`, () => {
+    confirmarAccion(`¿Generar reporte PDF avanzado del Historial Permanente (${mesSeleccionado})?`, () => {
         const jsPDFLib = window.jspdf ? window.jspdf.jsPDF : window.jsPDF;
         if (!jsPDFLib) {
             mostrarNotificacion('❌ Cargando librería PDF... Intente en 3 segundos.', 'error');
@@ -1236,28 +1239,57 @@ window.generarPDFCierreMensualPermanente = () => {
         }
 
         const docPdf = new jsPDFLib();
-        let totalIngresos = 0, totalGastos = 0;
+        let totalIngresosBrutos = 0;
+        let totalServicios = 0;
+        let totalProductos = 0;
+        let totalGastos = 0;
+        let totalComisionesEstilistas = 0;
 
         const filas = registrosMes.map(r => {
             const montoVal = parseFloat(r.monto) || 0;
-            if (r.tipo === 'GASTO') {
+            const tipoReg = (r.tipo || '').toUpperCase();
+            const conceptoReg = (r.concepto || '').toUpperCase();
+
+            if (tipoReg === 'GASTO') {
                 totalGastos += montoVal;
             } else {
-                totalIngresos += montoVal;
+                totalIngresosBrutos += montoVal;
+                if (tipoReg === 'SERVICIO' || conceptoReg.includes('SERVICIO')) {
+                    totalServicios += montoVal;
+                    totalComisionesEstilistas += (montoVal * 0.30);
+                } else if (tipoReg === 'PRODUCTO' || conceptoReg.includes('PRODUCTO') || (!conceptoReg.includes('ABONO'))) {
+                    // Clasificación automática de productos o ingresos generales
+                    if (!conceptoReg.includes('ABONO')) {
+                        totalProductos += montoVal;
+                    }
+                }
             }
 
             return [
                 r.fecha || '',
                 r.tipo || 'INGRESO',
-                (r.concepto || '').toUpperCase(),
+                conceptoReg,
                 (r.cliente || 'N/A').toUpperCase(),
                 (r.estilista || 'N/A').toUpperCase(),
                 r.metodo || 'Efectivo',
-                `${r.tipo === 'GASTO' ? '-' : ''}${formatearQ(montoVal)}`
+                `${tipoReg === 'GASTO' ? '-' : ''}${formatearQ(montoVal)}`
             ];
         });
 
-        const balanceNeto = totalIngresos - totalGastos;
+        // Filtrar deudas/créditos pendientes de la colección de pagos para este mes
+        const creditosMes = listaPagosCache.filter(p => {
+            const mesPago = (p.mesAnio || '').toUpperCase();
+            return mesPago.includes(mesSeleccionado) || mesSeleccionado.split(' ').every(palabra => mesPago.includes(palabra));
+        });
+
+        let totalCreditosOtorgados = 0;
+        let totalSaldosPendientesCobro = 0;
+        creditosMes.forEach(c => {
+            totalCreditosOtorgados += (parseFloat(c.montoTotal) || 0);
+            totalSaldosPendientesCobro += (parseFloat(c.saldoPendiente) || 0);
+        });
+
+        const balanceNeto = totalIngresosBrutos - totalGastos;
 
         docPdf.setFont('helvetica', 'bold');
         docPdf.setFontSize(18);
@@ -1265,7 +1297,7 @@ window.generarPDFCierreMensualPermanente = () => {
 
         docPdf.setFontSize(12);
         docPdf.setFont('helvetica', 'normal');
-        docPdf.text(`Cierre Mensual Historial Permanente - ${mesSeleccionado}`, 105, 25, { align: 'center' });
+        docPdf.text(`Cierre y Desglose Financiero - ${mesSeleccionado}`, 105, 25, { align: 'center' });
         docPdf.line(14, 29, 196, 29);
 
         docPdf.autoTable({
@@ -1281,19 +1313,34 @@ window.generarPDFCierreMensualPermanente = () => {
             }
         });
 
-        const finalY = docPdf.lastAutoTable.finalY + 10;
+        let finalY = docPdf.lastAutoTable.finalY + 10;
+        
+        // Verificamos espacio en página para el resumen
+        if (finalY > 230) {
+            docPdf.addPage();
+            finalY = 20;
+        }
+
         docPdf.setFont('helvetica', 'bold');
         docPdf.setFontSize(11);
-        docPdf.text(`RESUMEN GENERAL DEL MES (${mesSeleccionado}):`, 14, finalY);
+        docPdf.text(`DESGLOSE GENERAL Y ESTADÍSTICAS (${mesSeleccionado}):`, 14, finalY);
 
         docPdf.setFont('helvetica', 'normal');
-        docPdf.text(`· Total Ingresos Brutos: ${formatearQ(totalIngresos)}`, 14, finalY + 6);
-        docPdf.text(`· Total Gastos / Salidas: ${formatearQ(totalGastos)}`, 14, finalY + 12);
-        docPdf.setFont('helvetica', 'bold');
-        docPdf.text(`· BALANCE NETO: ${formatearQ(balanceNeto)}`, 14, finalY + 20);
+        docPdf.setFontSize(10);
+        docPdf.text(`· Total Ingresos por Servicios: ${formatearQ(totalServicios)}`, 14, finalY + 6);
+        docPdf.text(`· Total Ingresos por Productos: ${formatearQ(totalProductos)}`, 14, finalY + 12);
+        docPdf.text(`· Ingresos Brutos Totales: ${formatearQ(totalIngresosBrutos)}`, 14, finalY + 18);
+        docPdf.text(`· Total Créditos Otorgados (Fiado): ${formatearQ(totalCreditosOtorgados)}`, 14, finalY + 24);
+        docPdf.text(`· Saldos Pendientes de Cobro (Para el próximo mes): ${formatearQ(totalSaldosPendientesCobro)}`, 14, finalY + 30);
+        docPdf.text(`· Acumulado Comisiones Estilistas (30%): ${formatearQ(totalComisionesEstilistas)}`, 14, finalY + 36);
+        docPdf.text(`· Total Gastos / Salidas de Caja: ${formatearQ(totalGastos)}`, 14, finalY + 42);
 
-        docPdf.save(`Cierre_Permanente_${mesSeleccionado.replace(/\s+/g, '_')}_DMar.pdf`);
-        mostrarNotificacion('✨ PDF Mensual generado correctamente.', 'exito');
+        docPdf.setFont('helvetica', 'bold');
+        docPdf.setFontSize(11);
+        docPdf.text(`· BALANCE NETO FINAL: ${formatearQ(balanceNeto)}`, 14, finalY + 50);
+
+        docPdf.save(`Cierre_Avanzado_${mesSeleccionado.replace(/\s+/g, '_')}_DMar.pdf`);
+        mostrarNotificacion('✨ PDF Mensual con desglose completo generado.', 'exito');
     });
 };
 
