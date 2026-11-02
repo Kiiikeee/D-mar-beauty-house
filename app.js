@@ -857,7 +857,7 @@ function generarPDFReciboIndividual(recibo) {
     docPdf.save(`Comprobante_${recibo.numRecibo}_DMar.pdf`);
 }
 
-// INVENTARIO DE PRODUCTOS
+// INVENTARIO DE PRODUCTOS & ALERTA DE STOCK VACÍO
 onSnapshot(productosRef, (snapshot) => {
     listaProductosCache = [];
     snapshot.forEach((docSnapshot) => {
@@ -872,7 +872,27 @@ function renderizarProductos(productos) {
     tablaProductos.innerHTML = '';
     const textoBuscador = document.getElementById('buscador-productos') ? document.getElementById('buscador-productos').value.toLowerCase().trim() : '';
 
-    const filtrados = productos.filter(p => !textoBuscador || (p.nombre || '').toLowerCase().includes(textoBuscador) || (p.codigo || '').toLowerCase().includes(textoBuscador));
+    // Búsqueda inteligente por palabras clave independientes
+    const palabras = textoBuscador.split(/\s+/).filter(p => p.length > 0);
+    const filtrados = productos.filter(p => {
+        if (palabras.length === 0) return true;
+        const textoCompleto = `${p.nombre || ''} ${p.codigo || ''}`.toLowerCase();
+        return palabras.every(palabra => textoCompleto.includes(palabra));
+    });
+
+    // Gestión de Alertas de Stock Agotado (0)
+    const panelAlertas = document.getElementById('panel-alertas');
+    const listaAlertas = document.getElementById('lista-alertas');
+    if (panelAlertas && listaAlertas) {
+        const agotar = productos.filter(p => parseInt(p.stock) <= 0);
+        if (agotar.length > 0) {
+            panelAlertas.style.display = 'block';
+            listaAlertas.innerHTML = agotar.map(p => `<span style="font-size: 0.85rem; color: #ff8a80;">• <strong>${p.nombre}</strong> (Código: ${p.codigo}) - Stock agotado (0)</span>`).join('');
+        } else {
+            panelAlertas.style.display = 'none';
+            listaAlertas.innerHTML = '';
+        }
+    }
 
     if (filtrados.length === 0) {
         tablaProductos.innerHTML = `<tr><td colspan="5" style="text-align: center; color: #888;">No se encontraron productos.</td></tr>`;
@@ -927,7 +947,12 @@ function renderizarServicios(servicios) {
     tablaServicios.innerHTML = '';
     const textoBuscador = document.getElementById('buscador-servicios') ? document.getElementById('buscador-servicios').value.toLowerCase().trim() : '';
 
-    const filtrados = servicios.filter(s => !textoBuscador || (s.nombre || '').toLowerCase().includes(textoBuscador));
+    const palabras = textoBuscador.split(/\s+/).filter(p => p.length > 0);
+    const filtrados = servicios.filter(s => {
+        if (palabras.length === 0) return true;
+        const textoCompleto = `${s.nombre || ''}`.toLowerCase();
+        return palabras.every(palabra => textoCompleto.includes(palabra));
+    });
 
     if (filtrados.length === 0) {
         tablaServicios.innerHTML = `<tr><td colspan="3" style="text-align: center; color: #888;">No se encontraron servicios.</td></tr>`;
@@ -1125,13 +1150,11 @@ function renderizarHistorialPermanente() {
 
     const texto = document.getElementById('buscador-permanente') ? document.getElementById('buscador-permanente').value.toLowerCase().trim() : '';
 
+    const palabras = texto.split(/\s+/).filter(p => p.length > 0);
     const filtrados = listaPermanenteCache.filter(r => {
-        if (!texto) return true;
-        return (r.concepto || '').toLowerCase().includes(texto) ||
-               (r.cliente || '').toLowerCase().includes(texto) ||
-               (r.estilista || '').toLowerCase().includes(texto) ||
-               (r.fecha || '').toLowerCase().includes(texto) ||
-               (r.mesAnio || '').toLowerCase().includes(texto);
+        if (palabras.length === 0) return true;
+        const textoCompleto = `${r.concepto || ''} ${r.cliente || ''} ${r.estilista || ''} ${r.fecha || ''} ${r.mesAnio || ''}`.toLowerCase();
+        return palabras.every(palabra => textoCompleto.includes(palabra));
     });
 
     if (filtrados.length === 0) {
@@ -1182,7 +1205,7 @@ if (document.getElementById('buscador-permanente')) {
     document.getElementById('buscador-permanente').addEventListener('input', renderizarHistorialPermanente);
 }
 
-// FUNCIÓN PARA CIERRE GENERAL POR MESES DEL HISTORIAL PERMANENTE (SIN BORRAR NADA Y CON FILTRADO FLEXIBLE)
+// FUNCIÓN PARA CIERRE GENERAL POR MESES DEL HISTORIAL PERMANENTE (SIN BORRAR NADA)
 window.generarPDFCierreMensualPermanente = () => {
     const selectMes = document.getElementById('select-mes-permanente');
     if (!selectMes || !selectMes.value) {
@@ -1190,9 +1213,8 @@ window.generarPDFCierreMensualPermanente = () => {
         return;
     }
 
-    const mesSeleccionado = selectMes.value.toUpperCase(); // Ej: "OCTUBRE 2026"
+    const mesSeleccionado = selectMes.value.toUpperCase();
     
-    // Filtrado flexible que busca la coincidencia parcial o por partes en mesAnio o fecha
     const registrosMes = listaPermanenteCache.filter(r => {
         const mesAnioReg = (r.mesAnio || '').toUpperCase();
         const fechaReg = (r.fecha || '').toUpperCase();
@@ -1281,7 +1303,12 @@ function renderizarTablaCorrecciones() {
     tablaCorrecciones.innerHTML = '';
     const texto = document.getElementById('buscador-correcciones') ? document.getElementById('buscador-correcciones').value.toLowerCase().trim() : '';
 
-    const filtrados = listaPermanenteCache.filter(r => !texto || (r.concepto || '').toLowerCase().includes(texto) || (r.cliente || '').toLowerCase().includes(texto));
+    const palabras = texto.split(/\s+/).filter(p => p.length > 0);
+    const filtrados = listaPermanenteCache.filter(r => {
+        if (palabras.length === 0) return true;
+        const textoCompleto = `${r.concepto || ''} ${r.cliente || ''}`.toLowerCase();
+        return palabras.every(palabra => textoCompleto.includes(palabra));
+    });
 
     filtrados.forEach(reg => {
         const fila = document.createElement('tr');
