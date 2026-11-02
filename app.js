@@ -1203,7 +1203,7 @@ if (document.getElementById('buscador-permanente')) {
     document.getElementById('buscador-permanente').addEventListener('input', renderizarHistorialPermanente);
 }
 
-// CIERRE GENERAL POR MESES DEL HISTORIAL PERMANENTE (LÓGICA AJUSTADA A SOLICITUD DE LA CLIENTA)
+// CIERRE GENERAL POR MESES DEL HISTORIAL PERMANENTE (LÓGICA AJUSTADA)
 window.generarPDFCierreMensualPermanente = () => {
     const selectMes = document.getElementById('select-mes-permanente');
     if (!selectMes || !selectMes.value) {
@@ -1275,19 +1275,22 @@ window.generarPDFCierreMensualPermanente = () => {
             ];
         });
 
-        // Filtrar deudas/créditos pendientes de la colección de pagos para este mes
+        // Cuentas por Cobrar pendientes para este mes
         const creditosMes = listaPagosCache.filter(p => {
             const mesPago = (p.mesAnio || '').toUpperCase();
-            return mesPago.includes(mesSeleccionado) || mesSeleccionado.split(' ').every(palabra => mesPago.includes(palabra));
+            return (mesPago.includes(mesSeleccionado) || mesSeleccionado.split(' ').every(palabra => mesPago.includes(palabra))) && (parseFloat(p.saldoPendiente) || 0) > 0;
         });
 
-        let totalSaldosPendientesCobro = 0;
-        creditosMes.forEach(c => {
-            totalSaldosPendientesCobro += (parseFloat(c.saldoPendiente) || 0);
-        });
+        const filasCuentasCobrar = creditosMes.map(c => [
+            (c.cliente || 'N/A').toUpperCase(),
+            c.numRecibo || 'N/A',
+            c.fecha || '',
+            formatearQ(c.montoTotal),
+            formatearQ(c.saldoPendiente)
+        ]);
 
-        // BALANCE NETO FINAL: Se restan del ingreso bruto: Gastos, Comisiones de Estilistas y Saldos Pendientes (Deudas)
-        const balanceNetoFinal = totalIngresosBrutos - totalGastos - totalComisionesEstilistas - totalSaldosPendientesCobro;
+        // BALANCE NETO FINAL: Ingresos Brutos menos Gastos y menos Comisiones de Estilistas (Las cuentas por cobrar no alteran esta caja)
+        const balanceNetoFinal = totalIngresosBrutos - totalGastos - totalComisionesEstilistas;
 
         docPdf.setFont('helvetica', 'bold');
         docPdf.setFontSize(18);
@@ -1298,6 +1301,7 @@ window.generarPDFCierreMensualPermanente = () => {
         docPdf.text(`Cierre y Desglose Financiero - ${mesSeleccionado}`, 105, 25, { align: 'center' });
         docPdf.line(14, 29, 196, 29);
 
+        // Tabla principal de movimientos
         docPdf.autoTable({
             startY: 34,
             head: [['Fecha', 'Tipo', 'Concepto', 'Clienta', 'Estilista', 'Método', 'Monto']],
@@ -1313,7 +1317,7 @@ window.generarPDFCierreMensualPermanente = () => {
 
         let finalY = docPdf.lastAutoTable.finalY + 10;
         
-        if (finalY > 230) {
+        if (finalY > 210) {
             docPdf.addPage();
             finalY = 20;
         }
@@ -1327,16 +1331,35 @@ window.generarPDFCierreMensualPermanente = () => {
         docPdf.text(`· Total Ingresos por Servicios: ${formatearQ(totalServicios)}`, 14, finalY + 6);
         docPdf.text(`· Total Ingresos por Productos: ${formatearQ(totalProductos)}`, 14, finalY + 12);
         docPdf.text(`· Ingresos Brutos Totales: ${formatearQ(totalIngresosBrutos)}`, 14, finalY + 18);
-        docPdf.text(`· Cuentas por Cobrar (Saldos Pendientes): ${formatearQ(totalSaldosPendientesCobro)}`, 14, finalY + 24);
-        docPdf.text(`· Acumulado Comisiones Estilistas (30%): ${formatearQ(totalComisionesEstilistas)}`, 14, finalY + 30);
-        docPdf.text(`· Total Gastos / Salidas de Caja: ${formatearQ(totalGastos)}`, 14, finalY + 36);
+        docPdf.text(`· Acumulado Comisiones Estilistas (30%): ${formatearQ(totalComisionesEstilistas)}`, 14, finalY + 24);
+        docPdf.text(`· Total Gastos / Salidas de Caja: ${formatearQ(totalGastos)}`, 14, finalY + 30);
 
         docPdf.setFont('helvetica', 'bold');
-        docPdf.setFontSize(11);
-        docPdf.text(`· BALANCE NETO FINAL: ${formatearQ(balanceNetoFinal)}`, 14, finalY + 44);
+        docPdf.text(`· BALANCE NETO FINAL: ${formatearQ(balanceNetoFinal)}`, 14, finalY + 38);
+
+        // Tabla separada: CUENTAS POR COBRAR (Saldos pendientes)
+        if (filasCuentasCobrar.length > 0) {
+            let nextY = finalY + 48;
+            if (nextY > 230) {
+                docPdf.addPage();
+                nextY = 20;
+            }
+
+            docPdf.setFont('helvetica', 'bold');
+            docPdf.setFontSize(11);
+            docPdf.text("CUENTAS POR COBRAR (Saldos Pendientes del Mes):", 14, nextY);
+
+            docPdf.autoTable({
+                startY: nextY + 4,
+                head: [['Clienta', 'No. Recibo', 'Fecha', 'Monto Total', 'Saldo Pendiente']],
+                body: filasCuentasCobrar,
+                theme: 'grid',
+                headStyles: { fillColor: [180, 50, 50], textColor: [255, 255, 255], fontStyle: 'bold' }
+            });
+        }
 
         docPdf.save(`Cierre_Avanzado_${mesSeleccionado.replace(/\s+/g, '_')}_DMar.pdf`);
-        mostrarNotificacion('✨ PDF Mensual con desglose y balance ajustado generado.', 'exito');
+        mostrarNotificacion('✨ PDF Mensual generado correctamente con tabla de Cuentas por Cobrar.', 'exito');
     });
 };
 
