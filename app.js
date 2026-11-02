@@ -1182,7 +1182,7 @@ if (document.getElementById('buscador-permanente')) {
     document.getElementById('buscador-permanente').addEventListener('input', renderizarHistorialPermanente);
 }
 
-// FUNCIÓN PARA CIERRE GENERAL POR MESES DEL HISTORIAL PERMANENTE (SIN BORRAR NADA)
+// FUNCIÓN PARA CIERRE GENERAL POR MESES DEL HISTORIAL PERMANENTE (SIN BORRAR NADA Y CON FILTRADO FLEXIBLE)
 window.generarPDFCierreMensualPermanente = () => {
     const selectMes = document.getElementById('select-mes-permanente');
     if (!selectMes || !selectMes.value) {
@@ -1190,8 +1190,16 @@ window.generarPDFCierreMensualPermanente = () => {
         return;
     }
 
-    const mesSeleccionado = selectMes.value.toUpperCase();
-    const registrosMes = listaPermanenteCache.filter(r => (r.mesAnio || '').toUpperCase() === mesSeleccionado);
+    const mesSeleccionado = selectMes.value.toUpperCase(); // Ej: "OCTUBRE 2026"
+    
+    // Filtrado flexible que busca la coincidencia parcial o por partes en mesAnio o fecha
+    const registrosMes = listaPermanenteCache.filter(r => {
+        const mesAnioReg = (r.mesAnio || '').toUpperCase();
+        const fechaReg = (r.fecha || '').toUpperCase();
+        
+        return mesAnioReg.includes(mesSeleccionado) || 
+               mesSeleccionado.split(' ').every(palabra => mesAnioReg.includes(palabra) || fechaReg.includes(palabra));
+    });
 
     if (registrosMes.length === 0) {
         mostrarNotificacion(`⚠️ No hay registros para el mes de ${mesSeleccionado}.`, 'error');
