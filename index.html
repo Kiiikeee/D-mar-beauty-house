@@ -3,360 +3,657 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>D'Mar Style Salón - Sistema de Gestión</title>
-    <!-- Estilos CSS enlazados correctamente -->
+    <title>D'Mar Style Salón - Olga Mendez</title>
+    
+    <link rel="icon" type="image/jpeg" href="logo.jpg?v=2">
+    <link rel="apple-touch-icon" href="logo.jpg?v=2">
     <link rel="stylesheet" href="style.css">
-    <!-- Librería jsPDF y autoTable para la generación de PDFs -->
+
+    <!-- LIBRERÍAS PARA GENERACIÓN DE PDF -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
 </head>
 <body class="theme-ficha">
 
-    <div id="sidebar-overlay" onclick="toggleMenu()"></div>
-    <div id="toast-container"></div>
-
-    <header class="app-header">
-        <div class="header-left">
-            <button class="menu-toggle-btn" onclick="toggleMenu()">☰</button>
-            <h1 id="header-seccion-titulo">Ficha de Atención de Salón</h1>
-        </div>
-        <div class="header-right">
-            <button class="bell-btn" onclick="abrirModalChangelog()" title="Novedades y Actualizaciones">
-                🔔
-                <span class="bell-badge" style="display: block;"></span>
-            </button>
-            <button class="btn-gasto-header" onclick="abrirModalGasto(event)" title="Registrar Gasto">💸 Gasto</button>
-        </div>
-    </header>
-
-    <aside class="app-sidebar" id="sidebar">
-        <div class="sidebar-brand">
-            <h2>D'Mar Style</h2>
-            <p>Beauty House App</p>
+    <!-- MENÚ LATERAL DESPLEGABLE -->
+    <div id="sidebar-overlay" class="sidebar-overlay" onclick="toggleMenu()"></div>
+    <aside id="sidebar" class="sidebar">
+        <div class="sidebar-header">
+            <img src="logo.jpg?v=2" alt="D'Mar Logo" class="sidebar-logo">
+            <button class="btn-close-menu" onclick="toggleMenu()">✕</button>
         </div>
         <nav class="sidebar-nav">
-            <button class="menu-item active" id="menu-btn-ficha" onclick="navegarA('ficha')">📝 Ficha de Atención (POS)</button>
-            <button class="menu-item" id="menu-btn-recibos" onclick="navegarA('recibos')">🧾 Historial de Comprobantes</button>
-            <button class="menu-item" id="menu-btn-inventario" onclick="navegarA('inventario')">📦 Inventario de Productos</button>
-            <button class="menu-item" id="menu-btn-servicios" onclick="navegarA('servicios')">✨ Catálogo de Servicios</button>
-            <button class="menu-item" id="menu-btn-estilistas" onclick="navegarA('estilistas')">✂️ Control de Estilistas (30%)</button>
-            <button class="menu-item" id="menu-btn-pagos" onclick="navegarA('pagos')">💵 Control de Pagos & Créditos</button>
-            <button class="menu-item" id="menu-btn-reportes" onclick="navegarA('reportes')">📊 Historial Diario & Cierre</button>
-            <button class="menu-item" id="menu-btn-permanente" onclick="navegarA('permanente')">📈 Historial Mensual Permanente</button>
-            <button class="menu-item" id="menu-btn-correcciones" onclick="navegarA('correcciones')">🗑️ Anulación & Correcciones</button>
+            <button class="menu-item active" id="menu-btn-ficha" onclick="navegarA('ficha')">
+                <span class="menu-icon">💇‍♀️</span> Ficha de Atención
+            </button>
+            <button class="menu-item" id="menu-btn-recibos" onclick="navegarA('recibos')">
+                <span class="menu-icon">🧾</span> Recibos & Comprobantes
+            </button>
+            <button class="menu-item" id="menu-btn-inventario" onclick="navegarA('inventario')">
+                <span class="menu-icon">📦</span> Gestión de Inventario
+            </button>
+            <button class="menu-item" id="menu-btn-servicios" onclick="navegarA('servicios')">
+                <span class="menu-icon">✨</span> Catálogo de Servicios
+            </button>
+            <button class="menu-item" id="menu-btn-estilistas" onclick="navegarA('estilistas')">
+                <span class="menu-icon">✂️</span> Control de Estilistas (Comisiones)
+            </button>
+            <button class="menu-item" id="menu-btn-pagos" onclick="navegarA('pagos')">
+                <span class="menu-icon">💳</span> Control de Pagos & Créditos
+            </button>
+            <button class="menu-item" id="menu-btn-reportes" onclick="navegarA('reportes')">
+                <span class="menu-icon">📊</span> Historial Diario & Cierre
+            </button>
+            <button class="menu-item" id="menu-btn-permanente" onclick="navegarA('permanente')">
+                <span class="menu-icon">📅</span> Historial Mensual Permanente
+            </button>
+            <button class="menu-item" id="menu-btn-correcciones" onclick="navegarA('correcciones')">
+                <span class="menu-icon">⚙️</span> Corrección de Registros
+            </button>
         </nav>
+        <div class="sidebar-footer">
+            <p>D'Mar Style Salón © 2026 | <span style="color: var(--accent-color); font-weight: bold;">v1.5.5</span></p>
+        </div>
     </aside>
 
-    <main class="app-main">
-        <section id="seccion-ficha" class="seccion-contenido">
-            <div class="card-glass">
-                <h2>Nueva Ficha de Atención / Venta</h2>
-                <div class="form-grid" style="margin-top: 15px;">
-                    <div class="form-group"><label>Nombre de la Clienta</label><input type="text" id="pos-cliente" placeholder="EJ: MARIA LOPEZ" style="text-transform: uppercase;"></div>
-                    <div class="form-group"><label>Estilista por Defecto</label><input type="text" id="pos-estilista-defecto" placeholder="EJ: OLGA O KEYLA" style="text-transform: uppercase;" value="GENERAL"></div>
-                    <div class="form-group"><label>Método de Pago</label><select id="pos-metodo-pago"><option value="Efectivo">Efectivo</option><option value="Transferencia / Tarjeta">Transferencia / Tarjeta</option></select></div>
-                    <div class="form-group"><label>Estado de Pago</label><select id="pos-estado-pago" onchange="toggleCamposAbonoPOS()"><option value="COMPLETO">Pagado Completo</option><option value="CREDITO">Crédito / Fiado (Parcial)</option></select></div>
-                </div>
+    <!-- BARRA SUPERIOR -->
+    <header class="app-header">
+        <button class="btn-menu-toggle" onclick="toggleMenu()">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
+        </button>
+        <div class="header-brand">
+            <img src="logo.jpg?v=2" alt="Logo" class="header-logo-img">
+            <h1 class="header-title" id="header-seccion-titulo">Ficha de Atención de Salón</h1>
+        </div>
 
-                <div id="contenedor-pos-abono" style="display: none; margin-top: 15px; padding: 12px; background: rgba(239,83,80,0.1); border: 1px dashed #ef5350; border-radius: 8px;">
-                    <div class="form-group" style="margin-bottom: 10px;">
-                        <label style="color: #ef5350; font-weight: bold;">Monto Abonado Hoy (Q)</label>
-                        <input type="number" step="0.01" id="pos-monto-abono" placeholder="0.00" oninput="actualizarSumaDinamicaPOS()">
+        <button class="btn-changelog-bell" onclick="abrirModalChangelog()" title="Ver novedades">
+            🔔
+            <span class="bell-badge"></span>
+        </button>
+    </header>
+
+    <div class="container">
+        <div class="card">
+
+            <!-- SECCIÓN: FICHA DE ATENCIÓN -->
+            <div id="seccion-ficha" class="app-section">
+                <div style="background: rgba(212, 175, 55, 0.08); border: 1px solid var(--border-color); padding: 18px; border-radius: 12px; margin-bottom: 20px;">
+                    <h2 style="color: var(--accent-color); font-size: 1.1rem; margin-bottom: 12px;">✨ Registro de Atención a Clienta</h2>
+                    
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; margin-bottom: 15px;">
+                        <div>
+                            <label style="font-size: 0.8rem; color: var(--text-muted); display: block; margin-bottom: 4px;">Nombre de la Clienta:</label>
+                            <input type="text" id="pos-cliente" placeholder="Ej: MARIA LOPEZ" class="input-uppercase" list="historial-clientes-datalist" autocomplete="off">
+                            <datalist id="historial-clientes-datalist"></datalist>
+                        </div>
+                        <div>
+                            <label style="font-size: 0.8rem; color: var(--text-muted); display: block; margin-bottom: 4px;">Estilista Predeterminada:</label>
+                            <input type="text" id="pos-estilista-defecto" placeholder="Ej: LUCIA" class="input-uppercase" list="historial-estilistas-datalist" autocomplete="off">
+                            <datalist id="historial-estilistas-datalist"></datalist>
+                        </div>
                     </div>
-                    <div id="contenedor-items-pendientes-checkbox" style="margin-top: 10px;">
-                        <label style="font-size: 0.85rem; color: #ff8a80; font-weight: bold; display: block; margin-bottom: 5px;">Seleccione los ítems que quedan debiendo:</label>
-                        <div id="lista-checkboxes-pendientes" style="display: flex; flex-direction: column; gap: 6px; max-height: 120px; overflow-y: auto; padding: 6px; background: rgba(0,0,0,0.3); border-radius: 6px;"></div>
+
+                    <div style="display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 15px;">
+                        <button class="btn-primary" onclick="abrirModalAgregarServicioPOS(event)" style="flex: 1; background: linear-gradient(135deg, #e8a5c8, #c4739e); color: black;">💇‍♀️ + Agregar Servicio</button>
+                        <button class="btn-primary" onclick="abrirModalAgregarProductoPOS(event)" style="flex: 1; background: linear-gradient(135deg, #d4af37, #b89628); color: black;">📦 + Agregar Producto</button>
                     </div>
-                </div>
 
-                <div style="display: flex; gap: 10px; margin-top: 15px;">
-                    <button class="btn-primary" onclick="abrirModalAgregarServicioPOS(event)">+ Agregar Servicio</button>
-                    <button class="btn-secondary" onclick="abrirModalAgregarProductoPOS(event)">+ Agregar Producto</button>
-                </div>
-
-                <div class="table-responsive" style="margin-top: 20px;">
-                    <table>
-                        <thead><tr><th>Tipo</th><th>Concepto</th><th>Estilista</th><th style="text-align: center;">Cant.</th><th style="text-align: center;">Precio U.</th><th style="text-align: center;">Subtotal</th><th style="text-align: center;">Acción</th></tr></thead>
-                        <tbody id="tabla-pos-items"><tr><td colspan="7" style="text-align: center; color: #888;">No ha agregado ningún trabajo o producto a esta ficha.</td></tr></tbody>
-                    </table>
-                </div>
-
-                <div style="margin-top: 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px; background: rgba(0,0,0,0.2); padding: 15px; border-radius: 10px;">
-                    <div>
-                        <p style="font-size: 0.9rem; color: var(--text-muted);">Total Ficha: <strong id="pos-total-monto" style="color: var(--accent-color); font-size: 1.1rem;">Q0.00</strong></p>
-                        <p style="font-size: 0.9rem; color: var(--text-muted);">Cobro en Caja Hoy: <strong id="pos-cobro-hoy-monto" style="color: #81c784; font-size: 1.1rem;">Q0.00</strong></p>
-                        <p id="box-deuda-saldo" style="font-size: 0.9rem; color: #ef5350; display: none;">Saldo Deuda / Crédito: <strong id="pos-deuda-monto" style="font-size: 1.1rem;">Q0.00</strong></p>
+                    <div class="table-responsive">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Tipo</th>
+                                    <th>Servicio / Producto</th>
+                                    <th>Estilista</th>
+                                    <th style="text-align: center;">Cant.</th>
+                                    <th style="text-align: center;">Precio Unit.</th>
+                                    <th style="text-align: center;">Subtotal</th>
+                                    <th style="text-align: center;">Acción</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tabla-pos-items">
+                                <tr><td colspan="7" style="text-align: center; color: #888;">No ha agregado ningún trabajo o producto a esta ficha.</td></tr>
+                            </tbody>
+                        </table>
                     </div>
-                    <button class="btn-success" onclick="confirmarYGuardarReciboPOS()" style="padding: 12px 25px; font-size: 1rem;">💾 Guardar y Generar Comprobante</button>
+
+                    <div style="background: rgba(0,0,0,0.3); border: 1px solid var(--border-color); border-radius: 10px; padding: 15px; margin-top: 15px;">
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; margin-bottom: 12px;">
+                            <div>
+                                <label style="font-size: 0.8rem; color: var(--text-muted); display: block; margin-bottom: 4px;">Estado del Pago:</label>
+                                <select id="pos-estado-pago" onchange="toggleCamposAbonoPOS()">
+                                    <option value="COMPLETO">💵 Pagado Completo</option>
+                                    <option value="CREDITO">⚠️ Pendiente / Pago Parcial (Registrar Deuda)</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label style="font-size: 0.8rem; color: var(--text-muted); display: block; margin-bottom: 4px;">Método de Pago:</label>
+                                <select id="pos-metodo-pago">
+                                    <option value="Efectivo">💵 Efectivo</option>
+                                    <option value="Transferencia">🏦 Transferencia Bancaria</option>
+                                    <option value="Tarjeta">💳 Tarjeta de Crédito / Débito</option>
+                                </select>
+                            </div>
+                            <div id="contenedor-pos-abono" style="display: none;">
+                                <label style="font-size: 0.8rem; color: var(--text-muted); display: block; margin-bottom: 4px;">Monto Abonado Hoy (Q):</label>
+                                <input type="number" step="0.01" id="pos-monto-abono" placeholder="0.00" oninput="actualizarSumaDinamicaPOS()">
+                            </div>
+                        </div>
+
+                        <div id="contenedor-items-pendientes-checkbox" style="display: none; background: rgba(255,152,0,0.08); border: 1px dashed #ff9800; border-radius: 8px; padding: 12px; margin-bottom: 12px;">
+                            <label style="font-size: 0.85rem; color: #ffb74d; font-weight: bold; display: block; margin-bottom: 8px;">
+                                📌 Marque exactamente qué ítems quedan PENDIENTES de pago:
+                            </label>
+                            <div id="lista-checkboxes-pendientes" style="display: flex; flex-direction: column; gap: 6px;"></div>
+                        </div>
+
+                        <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid rgba(255,255,255,0.08); padding-top: 12px; flex-wrap: wrap; gap: 15px;">
+                            <div style="display: flex; gap: 20px; align-items: center; flex-wrap: wrap;">
+                                <div>
+                                    <span style="font-size: 0.75rem; color: var(--text-muted); display: block;">Total Ficha:</span>
+                                    <h3 id="pos-total-monto" style="color: var(--text-light); font-size: 1.3rem; margin: 0;">Q0.00</h3>
+                                </div>
+                                <div id="box-cobro-hoy">
+                                    <span style="font-size: 0.75rem; color: #81c784; display: block; font-weight: bold;">A Cobrar Hoy (Caja):</span>
+                                    <h2 id="pos-cobro-hoy-monto" style="color: #81c784; font-size: 1.8rem; margin: 0;">Q0.00</h2>
+                                </div>
+                                <div id="box-deuda-saldo" style="display: none;">
+                                    <span style="font-size: 0.75rem; color: #ef5350; display: block; font-weight: bold;">Saldo a Deuda:</span>
+                                    <h3 id="pos-deuda-monto" style="color: #ef5350; font-size: 1.4rem; margin: 0;">Q0.00</h3>
+                                </div>
+                            </div>
+
+                            <button class="btn-primary" onclick="confirmarYGuardarReciboPOS()" style="background: linear-gradient(135deg, #2e7d32, #1b5e20); color: white; padding: 12px 25px;">✅ Finalizar Atención & Generar Comprobante</button>
+                        </div>
+                    </div>
                 </div>
             </div>
-        </section>
 
-        <section id="seccion-recibos" class="seccion-contenido" style="display: none;">
-            <div class="card-glass">
-                <h2>Historial de Comprobantes de Salón</h2>
-                <div class="form-group" style="margin-top: 15px;"><input type="text" id="buscador-recibos" placeholder="🔍 Buscar por nombre de clienta o número de recibo..." style="text-transform: uppercase;"></div>
-                <div class="table-responsive" style="margin-top: 15px;">
+            <!-- SECCIÓN: RECIBOS & COMPROBANTES -->
+            <div id="seccion-recibos" class="app-section" style="display: none;">
+                <div class="section-header-flex">
+                    <h2>Historial de Comprobantes de Salón</h2>
+                    <input type="text" id="buscador-recibos" placeholder="🔍 Buscar clienta o #Comprobante..." class="search-input">
+                </div>
+
+                <div class="table-responsive">
                     <table>
-                        <thead><tr><th>No. Recibo</th><th>Fecha</th><th>Clienta</th><th>Resumen de Ítems</th><th style="text-align: center;">Método</th><th style="text-align: center;">Total</th><th style="text-align: center;">Estado</th><th style="text-align: center;">Acciones</th></tr></thead>
-                        <tbody id="tabla-recibos-historial"><tr><td colspan="8" style="text-align: center; color: #888;">No hay comprobantes guardados.</td></tr></tbody>
+                        <thead>
+                            <tr>
+                                <th># Comprobante</th>
+                                <th>Fecha y Hora</th>
+                                <th>Clienta</th>
+                                <th>Trabajos Realizados / Productos</th>
+                                <th style="text-align: center;">Método</th>
+                                <th style="text-align: center;">Suma General</th>
+                                <th style="text-align: center;">Estado Pago</th>
+                                <th style="text-align: center;">Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tabla-recibos-historial"></tbody>
                     </table>
                 </div>
             </div>
-        </section>
 
-        <section id="seccion-inventario" class="seccion-contenido" style="display: none;">
-            <div class="card-glass">
-                <h2>Gestión de Inventario de Productos</h2>
-                <div id="panel-alertas" style="display: none; background: rgba(239,83,80,0.15); border: 1px solid #ef5350; padding: 12px; border-radius: 8px; margin-bottom: 15px;">
-                    <strong style="color: #ef5350;">⚠️ Alerta de Stock Agotado:</strong>
-                    <div id="lista-alertas" style="margin-top: 5px; display: flex; flex-direction: column; gap: 4px;"></div>
+            <!-- SECCIÓN: INVENTARIO DE PRODUCTOS -->
+            <div id="seccion-inventario" class="app-section" style="display: none;">
+                <div id="panel-alertas" style="display: none; background: rgba(229, 57, 53, 0.1); border-left: 4px solid #e53935; padding: 12px; margin-bottom: 20px; border-radius: 8px;">
+                    <h3 style="color: #ef5350; margin: 0 0 8px 0; font-size: 14px; font-weight: 600;">⚠️ Atención: Productos Agotados</h3>
+                    <div id="lista-alertas" style="display: flex; flex-direction: column; gap: 6px;"></div>
                 </div>
-                <form id="form-producto" class="form-grid" style="margin-top: 15px;">
-                    <div class="form-group"><label>Código</label><input type="text" id="codigo-prod" required placeholder="EJ: P01" style="text-transform: uppercase;"></div>
-                    <div class="form-group"><label>Nombre del Producto</label><input type="text" id="nombre-prod" required placeholder="EJ: SPRAY FIJADOR" style="text-transform: uppercase;"></div>
-                    <div class="form-group"><label>Precio Venta (Q)</label><input type="number" step="0.01" id="precio-prod" required placeholder="0.00"></div>
-                    <div class="form-group"><label>Stock Inicial</label><input type="number" id="stock-prod" required placeholder="10"></div>
-                    <div class="form-group" style="display: flex; align-items: flex-end;"><button type="submit" class="btn-primary" style="width: 100%;">+ Registrar Producto</button></div>
+
+                <form id="form-producto" class="form-grid">
+                    <input type="text" id="codigo-prod" placeholder="Código (Ej: P001)" class="input-uppercase" required>
+                    <input type="text" id="nombre-prod" placeholder="Nombre del Producto" class="input-uppercase" required>
+                    <input type="number" step="0.01" id="precio-prod" placeholder="Precio (Q)" required>
+                    <input type="number" id="stock-prod" placeholder="Cantidad Inicial" required>
+                    <button type="submit" class="btn-primary" id="btn-guardar-nuevo">Guardar Producto</button>
                 </form>
-                <div class="form-group" style="margin-top: 25px;"><input type="text" id="buscador-productos" placeholder="🔍 Buscar producto por nombre o código..." style="text-transform: uppercase;"></div>
-                <div class="table-responsive" style="margin-top: 15px;">
+
+                <div class="section-header-flex">
+                    <h2>Inventario de Productos</h2>
+                    <input type="text" id="buscador-productos" placeholder="🔍 Buscar producto..." class="search-input">
+                </div>
+
+                <div class="table-responsive">
                     <table>
-                        <thead><tr><th>Código</th><th>Nombre</th><th style="text-align: center;">Precio (Q)</th><th style="text-align: center;">Stock</th><th style="text-align: center;">Acciones</th></tr></thead>
-                        <tbody id="tabla-productos"><tr><td colspan="5" style="text-align: center; color: #888;">Cargando inventario...</td></tr></tbody>
+                        <thead>
+                            <tr>
+                                <th>Código</th>
+                                <th>Producto</th>
+                                <th style="text-align: center;">Precio</th>
+                                <th style="text-align: center;">Existencias</th>
+                                <th style="text-align: center;">Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tabla-productos"></tbody>
                     </table>
                 </div>
             </div>
-        </section>
 
-        <section id="seccion-servicios" class="seccion-contenido" style="display: none;">
-            <div class="card-glass">
-                <h2>Catálogo de Servicios de Salón</h2>
-                <form id="form-servicio" class="form-grid" style="margin-top: 15px;">
-                    <div class="form-group" style="grid-column: span 2;"><label>Nombre del Servicio</label><input type="text" id="nombre-serv" required placeholder="EJ: PEDICURA SPA" style="text-transform: uppercase;"></div>
-                    <div class="form-group"><label>Precio Base (Q)</label><input type="number" step="0.01" id="precio-serv" required placeholder="0.00"></div>
-                    <div class="form-group" style="display: flex; align-items: flex-end;"><button type="submit" class="btn-primary" style="width: 100%;">+ Registrar Servicio</button></div>
+            <!-- SECCIÓN: CATÁLOGO DE SERVICIOS -->
+            <div id="seccion-servicios" class="app-section" style="display: none;">
+                <form id="form-servicio" class="form-grid" style="grid-template-columns: 2fr 1fr auto;">
+                    <input type="text" id="nombre-serv" placeholder="Nombre del Servicio (Ej: CORTE, BALAYAGE)" class="input-uppercase" required>
+                    <input type="number" step="0.01" id="precio-serv" placeholder="Precio Estándar (Q)" required>
+                    <button type="submit" class="btn-primary" id="btn-guardar-servicio" style="grid-column: span 3;">Guardar Servicio en Catálogo</button>
                 </form>
-                <div class="form-group" style="margin-top: 25px;"><input type="text" id="buscador-servicios" placeholder="🔍 Buscar servicio en el catálogo..." style="text-transform: uppercase;"></div>
-                <div class="table-responsive" style="margin-top: 15px;">
+
+                <div class="section-header-flex">
+                    <h2>Catálogo de Servicios</h2>
+                    <input type="text" id="buscador-servicios" placeholder="🔍 Buscar servicio por nombre..." class="search-input">
+                </div>
+
+                <div class="table-responsive">
                     <table>
-                        <thead><tr><th>Nombre del Servicio</th><th style="text-align: center;">Precio (Q)</th><th style="text-align: center;">Acciones</th></tr></thead>
-                        <tbody id="tabla-servicios"><tr><td colspan="3" style="text-align: center; color: #888;">Cargando servicios...</td></tr></tbody>
+                        <thead>
+                            <tr>
+                                <th>Servicio / Trabajo</th>
+                                <th style="text-align: center;">Precio Estándar</th>
+                                <th style="text-align: center;">Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tabla-servicios"></tbody>
                     </table>
                 </div>
             </div>
-        </section>
 
-        <section id="seccion-estilistas" class="seccion-contenido" style="display: none;">
-            <div class="card-glass">
-                <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px;">
-                    <h2>Control de Estilistas & Comisiones (30%)</h2>
-                    <button class="btn-danger" onclick="procesarCierreMensualComisiones()">🔒 Realizar Cierre de Comisiones & PDF</button>
+            <!-- SECCIÓN: CONTROL DE ESTILISTAS -->
+            <div id="seccion-estilistas" class="app-section" style="display: none;">
+                <div style="display: flex; gap: 10px; margin-bottom: 20px;">
+                    <button class="btn-primary" onclick="procesarCierreMensualComisiones()" style="background: linear-gradient(135deg, #e65100, #ef6c00); color: white;">🔒 Confirmar Cierre Mensual de Comisiones & PDF</button>
                 </div>
-                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-top: 20px;">
-                    <div class="stat-card"><h3>Total Servicios Realizados</h3><p id="stat-estilistas-total-servicios" style="color: var(--accent-color);">Q0.00</p></div>
-                    <div class="stat-card"><h3>Total Acumulado Comisiones (30%)</h3><p id="stat-estilistas-total-comision" style="color: #ffb74d;">Q0.00</p></div>
-                    <div class="stat-card"><h3>Cantidad de Trabajos</h3><p id="stat-estilistas-conteo">0</p></div>
+
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <span class="stat-title">Total Generado en Servicios</span>
+                        <h3 id="stat-estilistas-total-servicios">Q0.00</h3>
+                    </div>
+                    <div class="stat-card">
+                        <span class="stat-title">Total Comisiones (30%)</span>
+                        <h3 id="stat-estilistas-total-comision" style="color: #ffb74d;">Q0.00</h3>
+                    </div>
+                    <div class="stat-card">
+                        <span class="stat-title">Total Trabajos Realizados</span>
+                        <h3 id="stat-estilistas-conteo">0</h3>
+                    </div>
                 </div>
-                <div id="contenedor-resumen-estilistas" style="margin-top: 25px;"></div>
-                <h3 style="margin-top: 30px; font-size: 1.1rem; color: var(--accent-color);">Detalle de Servicios por Estilista</h3>
-                <div class="table-responsive" style="margin-top: 10px;">
+
+                <div class="section-header-flex">
+                    <h2>Liquidación de Comisiones de Estilistas (30% Fijo en Servicios)</h2>
+                    <input type="text" id="buscador-estilistas" placeholder="🔍 Buscar por Estilista..." class="search-input">
+                </div>
+
+                <div id="contenedor-resumen-estilistas" style="margin-bottom: 25px;"></div>
+
+                <div class="section-header-flex">
+                    <h2>Desglose Detallado de Servicios Realizados (Mes Actual)</h2>
+                </div>
+
+                <div class="table-responsive">
                     <table>
-                        <thead><tr><th>Fecha</th><th>Estilista</th><th>Servicio</th><th>Clienta</th><th style="text-align: center;">Precio Total</th><th style="text-align: center;">Comisión (30%)</th></tr></thead>
-                        <tbody id="tabla-estilistas-detalles"><tr><td colspan="6" style="text-align: center; color: #888;">No hay comisiones registradas en este periodo.</td></tr></tbody>
+                        <thead>
+                            <tr>
+                                <th>Fecha y Hora</th>
+                                <th>Estilista / Colaboradora</th>
+                                <th>Servicio Realizado</th>
+                                <th>Cliente</th>
+                                <th style="text-align: center;">Precio Servicio</th>
+                                <th style="text-align: center;">Comisión (30%)</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tabla-estilistas-detalles"></tbody>
                     </table>
                 </div>
             </div>
-        </section>
 
-        <section id="seccion-pagos" class="seccion-contenido" style="display: none;">
-            <div class="card-glass">
-                <h2>Control de Pagos & Créditos (Cuentas por Cobrar)</h2>
-                <div class="form-group" style="margin-top: 15px;"><input type="text" id="buscador-pagos" placeholder="🔍 Buscar por nombre de clienta..." style="text-transform: uppercase;"></div>
-                <div class="table-responsive" style="margin-top: 15px;">
+            <!-- SECCIÓN: CONTROL DE PAGOS Y CRÉDITOS -->
+            <div id="seccion-pagos" class="app-section" style="display: none;">
+                <div class="section-header-flex">
+                    <h2>Cuentas por Cobrar & Saldos Pendientes</h2>
+                    <input type="text" id="buscador-pagos" placeholder="🔍 Buscar clienta..." class="search-input">
+                </div>
+
+                <div class="table-responsive">
                     <table>
-                        <thead><tr><th>Clienta</th><th>Fecha</th><th>Detalle / Ítems</th><th style="text-align: center;">Monto Total</th><th style="text-align: center;">Abonado</th><th style="text-align: center;">Saldo Pendiente</th><th style="text-align: center;">Estado</th><th style="text-align: center;">Acción</th></tr></thead>
-                        <tbody id="tabla-pagos"><tr><td colspan="8" style="text-align: center; color: #888;">No hay saldos pendientes registrados.</td></tr></tbody>
+                        <thead>
+                            <tr>
+                                <th>Clienta</th>
+                                <th>Fecha y Hora</th>
+                                <th>Detalle Pendiente (Desplegable)</th>
+                                <th style="text-align: center;">Suma General</th>
+                                <th style="text-align: center;">Pagado</th>
+                                <th style="text-align: center;">Saldo Pendiente</th>
+                                <th style="text-align: center;">Estado</th>
+                                <th style="text-align: center;">Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tabla-pagos"></tbody>
                     </table>
                 </div>
             </div>
-        </section>
 
-        <section id="seccion-reportes" class="seccion-contenido" style="display: none;">
-            <div class="card-glass">
-                <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px;">
-                    <h2>Historial Diario & Cierre de Caja</h2>
-                    <button class="btn-success" onclick="procesarCierreCaja()">🔒 Realizar Cierre Diario & PDF</button>
+            <!-- SECCIÓN: HISTORIAL DIARIO & CAJA -->
+            <div id="seccion-reportes" class="app-section" style="display: none;">
+                <div style="display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap;">
+                    <button class="btn-primary" onclick="abrirModalGasto(event)" style="flex: 1; background: linear-gradient(135deg, #e65100, #ef6c00); color: white;">💸 Registrar Gasto / Salida</button>
+                    <button class="btn-primary" onclick="procesarCierreCaja()" style="flex: 1; background: linear-gradient(135deg, #2e7d32, #1b5e20); color: white;">🔒 Confirmar Cierre de Caja & PDF</button>
                 </div>
-                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-top: 20px;">
-                    <div class="stat-card"><h3>Ingresos Brutos</h3><p id="stat-total-ventas" style="color: var(--accent-color);">Q0.00</p></div>
-                    <div class="stat-card"><h3>Efectivo Neto en Caja</h3><p id="stat-efectivo" style="color: #81c784;">Q0.00</p></div>
-                    <div class="stat-card"><h3>Pagos Digitales</h3><p id="stat-digital" style="color: #64b5f6;">Q0.00</p></div>
-                    <div class="stat-card"><h3>Gastos / Salidas</h3><p id="stat-gastos" style="color: #ef5350;">Q0.00</p></div>
+
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <span class="stat-title">Ingreso Total</span>
+                        <h3 id="stat-total-ventas">Q0.00</h3>
+                    </div>
+                    <div class="stat-card">
+                        <span class="stat-title">Efectivo en Caja</span>
+                        <h3 id="stat-efectivo" style="color: #81c784;">Q0.00</h3>
+                    </div>
+                    <div class="stat-card">
+                        <span class="stat-title">Pagos Digitales</span>
+                        <h3 id="stat-digital" style="color: #64b5f6;">Q0.00</h3>
+                    </div>
+                    <div class="stat-card">
+                        <span class="stat-title">Gastos / Salidas</span>
+                        <h3 id="stat-gastos" style="color: #e53935;">Q0.00</h3>
+                    </div>
                 </div>
-                <div class="table-responsive" style="margin-top: 25px;">
+
+                <div class="section-header-flex">
+                    <h2>Historial de Movimientos de Caja (Jornada Actual)</h2>
+                    <input type="text" id="buscador-ventas" placeholder="🔍 Buscar movimiento..." class="search-input">
+                </div>
+
+                <div class="table-responsive">
                     <table>
-                        <thead><tr><th>Fecha y Hora</th><th>Concepto / Trabajo</th><th>Clienta</th><th>Monto</th><th>Método / Origen</th></tr></thead>
-                        <tbody id="tabla-ventas-historial"><tr><td colspan="5" style="text-align: center; color: #888;">No hay movimientos registrados hoy.</td></tr></tbody>
+                        <thead>
+                            <tr>
+                                <th>Fecha y Hora</th>
+                                <th>Concepto / Detalle</th>
+                                <th>Atendió / Cliente</th>
+                                <th>Monto</th>
+                                <th>Tipo / Método</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tabla-ventas-historial"></tbody>
                     </table>
                 </div>
             </div>
-        </section>
 
-        <section id="seccion-permanente" class="seccion-contenido" style="display: none;">
-            <div class="card-glass">
-                <h2>Historial Mensual Permanente & Cierre Avanzado</h2>
-                <div class="form-grid" style="margin-top: 15px; align-items: flex-end;">
-                    <div class="form-group">
-                        <label>Seleccione Mes de Cierre</label>
-                        <select id="select-mes-permanente">
-                            <option value="OCTUBRE 2026">Octubre 2026</option>
-                            <option value="NOVIEMBRE 2026">Noviembre 2026</option>
-                            <option value="DICIEMBRE 2026">Diciembre 2026</option>
-                            <option value="ENERO 2027">Enero 2027</option>
-                            <option value="FEBRERO 2027">Febrero 2027</option>
-                            <option value="MARZO 2027">Marzo 2027</option>
+            <!-- SECCIÓN: HISTORIAL MENSUAL PERMANENTE -->
+            <div id="seccion-permanente" class="app-section" style="display: none;">
+                <div style="background: rgba(100, 50, 150, 0.1); border: 1px solid var(--border-color); padding: 15px; border-radius: 10px; margin-bottom: 20px; display: flex; gap: 15px; align-items: center; flex-wrap: wrap;">
+                    <div style="flex: 1;">
+                        <h3 style="color: var(--accent-color); margin: 0 0 4px 0; font-size: 1rem;">📅 Cierre General por Meses (Historial Permanente)</h3>
+                        <p style="color: var(--text-muted); font-size: 0.85rem; margin: 0;">Seleccione el mes y descargue el reporte en PDF multi-página sin eliminar ningún dato del historial.</p>
+                    </div>
+                    <div style="display: flex; gap: 8px; align-items: center;">
+                        <select id="select-mes-permanente" style="padding: 8px; border-radius: 6px; background: #222; color: #fff; border: 1px solid var(--border-color);">
+                            <option value="OCTUBRE 2026">OCTUBRE 2026</option>
+                            <option value="NOVIEMBRE 2026" selected>NOVIEMBRE 2026</option>
+                            <option value="DICIEMBRE 2026">DICIEMBRE 2026</option>
+                            <option value="ENERO 2027">ENERO 2027</option>
                         </select>
+                        <button class="btn-primary" onclick="generarPDFCierreMensualPermanente()" style="background: linear-gradient(135deg, #7b1fa2, #4a148c); color: white;">📄 Generar PDF Mensual</button>
                     </div>
-                    <div class="form-group"><button class="btn-primary" onclick="generarPDFCierreMensualPermanente()" style="width: 100%;">📥 Descargar PDF Cierre Mensual Avanzado</button></div>
                 </div>
-                <div class="form-group" style="margin-top: 25px;"><input type="text" id="buscador-permanente" placeholder="🔍 Buscar en el historial permanente..." style="text-transform: uppercase;"></div>
-                <div id="contenedor-historial-permanente" style="margin-top: 15px;"></div>
-            </div>
-        </section>
 
-        <section id="seccion-correcciones" class="seccion-contenido" style="display: none;">
-            <div class="card-glass">
-                <h2>Anulación & Corrección de Registros</h2>
-                <p style="font-size: 0.85rem; color: var(--text-muted); margin-top: 5px;">Si cometió un error, puede anularlo por completo aquí para removerlo y devolver el stock automáticamente.</p>
-                <div class="form-group" style="margin-top: 15px;"><input type="text" id="buscador-correcciones" placeholder="🔍 Buscar registro a corregir..." style="text-transform: uppercase;"></div>
-                <div class="table-responsive" style="margin-top: 15px;">
+                <div class="section-header-flex">
+                    <h2>Historial Permanente de Transacciones</h2>
+                    <input type="text" id="buscador-permanente" placeholder="🔍 Buscar registro histórico (ej: Octubre, María)..." class="search-input">
+                </div>
+
+                <div id="contenedor-historial-permanente"></div>
+            </div>
+
+            <!-- SECCIÓN: CORRECCIÓN DE REGISTROS -->
+            <div id="seccion-correcciones" class="app-section" style="display: none;">
+                <div style="background: rgba(229, 57, 53, 0.1); border-left: 4px solid #e53935; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
+                    <h3 style="color: #ef5350; margin: 0 0 6px 0; font-size: 1rem;">⚙️ Módulo de Corrección & Anulación Total</h3>
+                    <p style="color: var(--text-muted); font-size: 0.85rem; margin: 0;">
+                        Al anular un registro o comprobante en esta sección, se eliminará por completo de **Ventas Diarias**, **Cierre de Caja**, **Comisiones de Estilistas**, **Comprobantes Emitidos** e **Historial Permanente**, regresando el stock correspondiente al inventario.
+                    </p>
+                </div>
+
+                <div class="section-header-flex">
+                    <h2>Anulación Completa de Registros</h2>
+                    <input type="text" id="buscador-correcciones" placeholder="🔍 Buscar por fecha, concepto, clienta..." class="search-input">
+                </div>
+
+                <div class="table-responsive">
                     <table>
-                        <thead><tr><th>Fecha</th><th>Tipo</th><th>Concepto</th><th>Clienta</th><th style="text-align: center;">Monto</th><th style="text-align: center;">Acción</th></tr></thead>
-                        <tbody id="tabla-correcciones"><tr><td colspan="6" style="text-align: center; color: #888;">No hay registros para corregir.</td></tr></tbody>
+                        <thead>
+                            <tr>
+                                <th>Fecha y Hora</th>
+                                <th>Tipo</th>
+                                <th>Concepto / Detalle</th>
+                                <th>Atendió / Clienta</th>
+                                <th style="text-align: center;">Monto (Q)</th>
+                                <th style="text-align: center;">Acción de Anulación</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tabla-correcciones"></tbody>
                     </table>
                 </div>
             </div>
-        </section>
-    </main>
 
-    <!-- MODALES -->
-    <div id="modal-gasto" class="modal-overlay" style="display: none;">
-        <div class="modal-card">
-            <h3>💸 Registrar Gasto o Salida de Dinero</h3>
-            <form id="form-gasto" style="margin-top: 15px;">
-                <div class="form-group" style="margin-bottom: 12px;"><label>Concepto del Gasto</label><input type="text" id="gasto-concepto" required placeholder="EJ: COMPRA" style="text-transform: uppercase;"></div>
-                <div class="form-group" style="margin-bottom: 12px;"><label>Monto (Q)</label><input type="number" step="0.01" id="gasto-monto" required placeholder="0.00"></div>
-                <div class="form-group" style="margin-bottom: 15px;"><label>Origen del Dinero</label><select id="gasto-origen"><option value="Efectivo">Efectivo en Caja</option><option value="Transferencia / Tarjeta">Cuenta Digital / Banco</option></select></div>
-                <div style="display: flex; gap: 10px; justify-content: flex-end;"><button type="button" class="btn-secondary" onclick="cerrarModalGasto(event)">Cancelar</button><button type="submit" class="btn-primary">Registrar Gasto</button></div>
+        </div>
+    </div>
+
+    <!-- MODAL CHANGELOG -->
+    <div id="modal-changelog" class="modal-overlay" style="display: none;">
+        <div class="modal-content" style="max-width: 520px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 10px; margin-bottom: 15px;">
+                <h3 style="margin: 0; color: var(--accent-color);">🔔 Novedades & Versiones</h3>
+                <span style="background: var(--accent-color); color: #000; font-weight: bold; padding: 2px 8px; border-radius: 12px; font-size: 0.75rem;">v1.5.5</span>
+            </div>
+
+            <div style="max-height: 320px; overflow-y: auto; display: flex; flex-direction: column; gap: 15px; padding-right: 5px;">
+                <div style="background: rgba(255,255,255,0.03); border: 1px solid var(--border-color); border-radius: 8px; padding: 12px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                        <strong style="color: #81c784; font-size: 0.95rem;">Versión 1.5.5 (Actual)</strong>
+                        <small style="color: var(--text-muted);">Actualización</small>
+                    </div>
+                    <ul style="font-size: 0.83rem; color: var(--text-light); padding-left: 18px; line-height: 1.5;">
+                        <li><strong>Buscadores Activos</strong>: Corrección en los buscadores de Inventario y Servicios.</li>
+                        <li><strong>Sincronización de Deudas</strong>: Al saldar una deuda por completo, se actualiza automáticamente el recibo a "PAGADO" y desaparece de pendientes.</li>
+                        <li><strong>Cierre Mensual Historial Permanente</strong>: Nuevo botón y selector de meses para generar reportes PDF multi-página sin borrar registros.</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="modal-actions" style="margin-top: 18px;">
+                <button type="button" class="btn-primary" onclick="cerrarModalChangelog()">Entendido / Cerrar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL AGREGAR SERVICIO -->
+    <div id="modal-pos-servicio" class="modal-overlay" style="display: none;">
+        <div class="modal-content">
+            <h3>Agregar Servicio a la Ficha</h3>
+            <form id="form-pos-servicio">
+                <label>Escriba o Seleccione el Servicio:</label>
+                <input type="text" id="pos-input-servicio" placeholder="🔍 Escriba el servicio (ej: Corte, Balayage...)" class="input-uppercase" list="lista-servicios-datalist" required autocomplete="off">
+                <datalist id="lista-servicios-datalist"></datalist>
+
+                <label>Estilista que lo realizó:</label>
+                <input type="text" id="pos-item-estilista" placeholder="Ej: MARIA" class="input-uppercase" list="historial-estilistas-datalist" required autocomplete="off">
+
+                <label>Precio del Servicio (Q) <small style="color: #888;">(Opcional - Se autocompleta)</small>:</label>
+                <input type="number" step="0.01" id="pos-item-precio-serv" placeholder="Se llena automáticamente">
+
+                <div class="modal-actions">
+                    <button type="button" class="btn-cancel" onclick="cerrarModalAgregarServicioPOS(event)">Cancelar</button>
+                    <button type="submit" class="btn-primary">Añadir a la Ficha</button>
+                </div>
             </form>
         </div>
     </div>
 
-    <div id="modal-abono" class="modal-overlay" style="display: none;">
-        <div class="modal-card">
-            <h3>💵 Registrar Abono o Pago de Deuda</h3>
-            <p id="abono-cliente-nombre" style="font-size: 0.9rem; color: var(--accent-color); margin-top: 5px;"></p>
-            <form id="form-abono" style="margin-top: 15px;">
-                <input type="hidden" id="abono-pago-id">
-                <div class="form-group" style="margin-bottom: 12px;"><label>Monto a Abonar (Q)</label><input type="number" step="0.01" id="abono-monto-ingresado" required placeholder="0.00"></div>
-                <div class="form-group" style="margin-bottom: 15px;"><label>Método de Pago del Abono</label><select id="abono-metodo"><option value="Efectivo">Efectivo</option><option value="Transferencia / Tarjeta">Transferencia / Tarjeta</option></select></div>
-                <div style="display: flex; gap: 10px; justify-content: flex-end;"><button type="button" class="btn-secondary" onclick="cerrarModalAbono(event)">Cancelar</button><button type="submit" class="btn-primary">Guardar Abono</button></div>
+    <!-- MODAL AGREGAR PRODUCTO -->
+    <div id="modal-pos-producto" class="modal-overlay" style="display: none;">
+        <div class="modal-content">
+            <h3>Agregar Producto a la Ficha</h3>
+            <form id="form-pos-producto">
+                <label>Escriba o Seleccione el Producto:</label>
+                <input type="text" id="pos-input-producto" placeholder="🔍 Escriba el producto (ej: Shampoo, Tinte...)" class="input-uppercase" list="lista-productos-datalist" required autocomplete="off">
+                <datalist id="lista-productos-datalist"></datalist>
+
+                <label>Cantidad:</label>
+                <input type="number" id="pos-item-cant-prod" min="1" value="1" required>
+
+                <label>Precio Subtotal (Q) <small style="color: #888;">(Calculado automáticamente)</small>:</label>
+                <input type="number" step="0.01" id="pos-item-precio-prod" placeholder="Se calcula automáticamente">
+
+                <div class="modal-actions">
+                    <button type="button" class="btn-cancel" onclick="cerrarModalAgregarProductoPOS(event)">Cancelar</button>
+                    <button type="submit" class="btn-primary">Añadir a la Ficha</button>
+                </div>
             </form>
         </div>
     </div>
 
+    <!-- MODAL VER COMPROBANTE -->
     <div id="modal-ver-recibo" class="modal-overlay" style="display: none;">
-        <div class="modal-card" style="max-width: 600px;">
-            <h3 id="ver-recibo-titulo">Comprobante</h3>
-            <p id="ver-recibo-sub" style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 10px;"></p>
+        <div class="modal-content" style="max-width: 550px;">
+            <h3 id="ver-recibo-titulo">Comprobante de Atención</h3>
+            <p id="ver-recibo-sub" style="color: var(--accent-color); font-weight: bold; margin-bottom: 10px;"></p>
+
             <div class="table-responsive" style="max-height: 250px; overflow-y: auto;">
                 <table>
-                    <thead><tr><th>Tipo</th><th>Concepto</th><th>Estilista</th><th style="text-align: center;">Subtotal</th></tr></thead>
+                    <thead>
+                        <tr>
+                            <th>Tipo</th>
+                            <th>Concepto</th>
+                            <th>Estilista</th>
+                            <th style="text-align: center;">Monto</th>
+                        </tr>
+                    </thead>
                     <tbody id="ver-recibo-items"></tbody>
                 </table>
             </div>
-            <div style="margin-top: 15px; display: flex; justify-content: space-between; align-items: center;">
-                <p style="font-size: 1rem;">Total: <strong id="ver-recibo-total" style="color: var(--accent-color);">Q0.00</strong></p>
-                <div style="display: flex; gap: 10px;"><button id="btn-reimprimir-recibo" class="btn-primary">📥 Descargar PDF</button><button class="btn-secondary" onclick="cerrarModalVerRecibo(event)">Cerrar</button></div>
+
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 15px; border-top: 1px solid var(--border-color); padding-top: 10px;">
+                <span style="color: var(--text-muted);">Suma General:</span>
+                <h3 id="ver-recibo-total" style="color: #81c784; margin: 0;">Q0.00</h3>
+            </div>
+
+            <div class="modal-actions" style="margin-top: 15px;">
+                <button type="button" class="btn-cancel" onclick="cerrarModalVerRecibo(event)">Cerrar</button>
+                <button type="button" id="btn-reimprimir-recibo" class="btn-primary" style="background: linear-gradient(135deg, #1976D2, #115293); color: white;">📄 Descargar PDF</button>
             </div>
         </div>
     </div>
 
-    <div id="modal-confirm" class="modal-overlay" style="display: none;">
-        <div class="modal-card" style="text-align: center; max-width: 400px;">
-            <h3>⚠️ Confirmación</h3>
-            <p id="confirm-mensaje" style="margin: 15px 0; color: #f5f5f7;"></p>
-            <div style="display: flex; gap: 10px; justify-content: center;"><button id="btn-confirm-cancel" class="btn-secondary">Cancelar</button><button id="btn-confirm-ok" class="btn-danger">Sí, Confirmar</button></div>
+    <!-- MODAL REGISTRO DE GASTO -->
+    <div id="modal-gasto" class="modal-overlay" style="display: none;">
+        <div class="modal-content">
+            <h3>Registrar Salida / Gasto</h3>
+            <form id="form-gasto">
+                <label>Descripción / Motivo del Gasto:</label>
+                <input type="text" id="gasto-concepto" placeholder="Ej: Compra de insumos, café..." class="input-uppercase" required>
+
+                <label>Monto del Gasto (Q):</label>
+                <input type="number" step="0.01" id="gasto-monto" min="0.01" placeholder="0.00" required>
+
+                <label>Tomado de:</label>
+                <select id="gasto-origen">
+                    <option value="Efectivo">💵 Efectivo de Caja</option>
+                    <option value="Transferencia">🏦 Transferencia / Banco</option>
+                </select>
+
+                <div class="modal-actions">
+                    <button type="button" class="btn-cancel" onclick="cerrarModalGasto(event)">Cancelar</button>
+                    <button type="submit" class="btn-primary" style="background: linear-gradient(135deg, #e65100, #ef6c00); color: white;">Registrar Gasto</button>
+                </div>
+            </form>
         </div>
     </div>
 
+    <!-- MODAL REGISTRAR ABONO A CUENTA -->
+    <div id="modal-abono" class="modal-overlay" style="display: none;">
+        <div class="modal-content">
+            <h3>Abonar a Saldo Pendiente</h3>
+            <p id="abono-cliente-nombre" style="color: var(--accent-color); font-weight: bold; margin-bottom: 10px;"></p>
+            <form id="form-abono">
+                <input type="hidden" id="abono-pago-id">
+                
+                <label>Monto del Abono (Q):</label>
+                <input type="number" step="0.01" id="abono-monto-ingresado" placeholder="0.00" required>
+
+                <label>Método de Pago:</label>
+                <select id="abono-metodo">
+                    <option value="Efectivo">💵 Efectivo</option>
+                    <option value="Transferencia">🏦 Transferencia Bancaria</option>
+                    <option value="Tarjeta">💳 Tarjeta de Crédito / Débito</option>
+                </select>
+
+                <div class="modal-actions">
+                    <button type="button" class="btn-cancel" onclick="cerrarModalAbono(event)">Cancelar</button>
+                    <button type="submit" class="btn-primary" style="background: linear-gradient(135deg, #2e7d32, #1b5e20); color: white;">Registrar Abono</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL DE CONFIRMACIÓN -->
+    <div id="modal-confirm" class="modal-overlay" style="display: none;">
+        <div class="modal-content" style="max-width: 380px; text-align: center;">
+            <div style="font-size: 2.5rem; margin-bottom: 10px;">⚠️</div>
+            <h3 id="confirm-titulo" style="margin-bottom: 8px;">¿Está seguro?</h3>
+            <p id="confirm-mensaje" style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 20px;"></p>
+            <div class="modal-actions" style="justify-content: center; gap: 15px;">
+                <button type="button" class="btn-cancel" id="btn-confirm-cancel">Cancelar</button>
+                <button type="button" class="btn-primary" id="btn-confirm-ok" style="background: linear-gradient(135deg, #c62828, #b71c1c); color: white;">Aceptar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODALES EDICIONES -->
     <div id="modal-edicion" class="modal-overlay" style="display: none;">
-        <div class="modal-card">
-            <h3>✏️ Editar Producto</h3>
-            <form id="form-editar" style="margin-top: 15px;">
+        <div class="modal-content">
+            <h3>Editar Datos del Producto</h3>
+            <form id="form-editar">
                 <input type="hidden" id="edit-id">
-                <div class="form-group" style="margin-bottom: 10px;"><label>Código</label><input type="text" id="edit-codigo" required style="text-transform: uppercase;"></div>
-                <div class="form-group" style="margin-bottom: 10px;"><label>Nombre</label><input type="text" id="edit-nombre" required style="text-transform: uppercase;"></div>
-                <div class="form-group" style="margin-bottom: 10px;"><label>Precio (Q)</label><input type="number" step="0.01" id="edit-precio" required></div>
-                <div class="form-group" style="margin-bottom: 15px;"><label>Stock</label><input type="number" id="edit-stock" required></div>
-                <div style="display: flex; gap: 10px; justify-content: flex-end;"><button type="button" class="btn-secondary" onclick="cerrarModalEdicion(event)">Cancelar</button><button type="submit" class="btn-primary">Actualizar</button></div>
+
+                <label>Código de Producto:</label>
+                <input type="text" id="edit-codigo" class="input-uppercase" required>
+
+                <label>Nombre del Producto:</label>
+                <input type="text" id="edit-nombre" class="input-uppercase" required>
+
+                <label>Precio de Venta (Q):</label>
+                <input type="number" step="0.01" id="edit-precio" required>
+
+                <label>Existencias en Stock:</label>
+                <input type="number" id="edit-stock" required>
+
+                <div class="modal-actions">
+                    <button type="button" class="btn-cancel" onclick="cerrarModalEdicion(event)">Cancelar</button>
+                    <button type="submit" class="btn-primary" id="btn-guardar-edit">Guardar Cambios</button>
+                </div>
             </form>
         </div>
     </div>
 
     <div id="modal-edicion-servicio" class="modal-overlay" style="display: none;">
-        <div class="modal-card">
-            <h3>✏️ Editar Servicio</h3>
-            <form id="form-editar-servicio" style="margin-top: 15px;">
+        <div class="modal-content">
+            <h3>Editar Servicio</h3>
+            <form id="form-editar-servicio">
                 <input type="hidden" id="edit-serv-id">
-                <div class="form-group" style="margin-bottom: 10px;"><label>Nombre del Servicio</label><input type="text" id="edit-serv-nombre" required style="text-transform: uppercase;"></div>
-                <div class="form-group" style="margin-bottom: 15px;"><label>Precio (Q)</label><input type="number" step="0.01" id="edit-serv-precio" required></div>
-                <div style="display: flex; gap: 10px; justify-content: flex-end;"><button type="button" class="btn-secondary" onclick="cerrarModalEdicionServicio(event)">Cancelar</button><button type="submit" class="btn-primary">Actualizar</button></div>
-            </form>
-        </div>
-    </div>
 
-    <div id="modal-pos-servicio" class="modal-overlay" style="display: none;">
-        <div class="modal-card">
-            <h3>✨ Agregar Servicio a la Ficha</h3>
-            <form id="form-pos-servicio" style="margin-top: 15px;">
-                <div class="form-group" style="margin-bottom: 10px;"><label>Servicio</label><input type="text" id="pos-input-servicio" list="lista-servicios-datalist" required placeholder="Escriba..." style="text-transform: uppercase;"><datalist id="lista-servicios-datalist"></datalist></div>
-                <div class="form-group" style="margin-bottom: 10px;"><label>Estilista</label><input type="text" id="pos-item-estilista" required placeholder="OLGA" style="text-transform: uppercase;" value="GENERAL"></div>
-                <div class="form-group" style="margin-bottom: 15px;"><label>Precio (Q)</label><input type="number" step="0.01" id="pos-item-precio-serv" required placeholder="0.00"></div>
-                <div style="display: flex; gap: 10px; justify-content: flex-end;"><button type="button" class="btn-secondary" onclick="cerrarModalAgregarServicioPOS(event)">Cancelar</button><button type="submit" class="btn-primary">Agregar</button></div>
-            </form>
-        </div>
-    </div>
+                <label>Nombre del Servicio / Trabajo:</label>
+                <input type="text" id="edit-serv-nombre" class="input-uppercase" required>
 
-    <div id="modal-pos-producto" class="modal-overlay" style="display: none;">
-        <div class="modal-card">
-            <h3>📦 Agregar Producto a la Ficha</h3>
-            <form id="form-pos-producto" style="margin-top: 15px;">
-                <div class="form-group" style="margin-bottom: 10px;"><label>Producto</label><input type="text" id="pos-input-producto" list="lista-productos-datalist" required placeholder="Escriba..." style="text-transform: uppercase;"><datalist id="lista-productos-datalist"></datalist></div>
-                <div class="form-group" style="margin-bottom: 10px;"><label>Cantidad</label><input type="number" id="pos-item-cant-prod" required value="1" min="1"></div>
-                <div class="form-group" style="margin-bottom: 15px;"><label>Subtotal (Q)</label><input type="number" step="0.01" id="pos-item-precio-prod" required placeholder="0.00"></div>
-                <div style="display: flex; gap: 10px; justify-content: flex-end;"><button type="button" class="btn-secondary" onclick="cerrarModalAgregarProductoPOS(event)">Cancelar</button><button type="submit" class="btn-primary">Agregar</button></div>
-            </form>
-        </div>
-    </div>
+                <label>Precio Estándar (Q):</label>
+                <input type="number" step="0.01" id="edit-serv-precio" required>
 
-    <div id="modal-changelog" class="modal-overlay" style="display: none;">
-        <div class="modal-card" style="max-width: 500px;">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
-                <h3 style="color: var(--accent-color); margin: 0;">🔔 Novedades y Actualizaciones</h3>
-                <button onclick="cerrarModalChangelog()" style="background: none; border: none; color: #fff; font-size: 1.2rem; cursor: pointer;">✕</button>
-            </div>
-            <div style="max-height: 350px; overflow-y: auto; display: flex; flex-direction: column; gap: 12px; padding-right: 5px;">
-                <div class="changelog-item" style="border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 10px;">
-                    <strong style="color: var(--accent-color);">📢 Actualización de Reportes y Seguridad Firebase</strong>
-                    <small style="display: block; color: var(--text-muted); margin-bottom: 4px;">Noviembre 2026</small>
-                    <p style="font-size: 0.85rem; margin: 0; color: #f5f5f7; line-height: 1.4;">
-                        Reglas de seguridad de Firebase actualizadas permanentemente. En el reporte mensual se separaron las <strong>Cuentas por Cobrar</strong> en una tabla independiente y el Balance Neto Final calcula exactamente las utilidades descontando comisiones y gastos.
-                    </p>
+                <div class="modal-actions">
+                    <button type="button" class="btn-cancel" onclick="cerrarModalEdicionServicio(event)">Cancelar</button>
+                    <button type="submit" class="btn-primary">Guardar Cambios</button>
                 </div>
-            </div>
-            <div style="margin-top: 15px; text-align: right;"><button class="btn-primary" onclick="cerrarModalChangelog()" style="padding: 6px 15px;">Entendido</button></div>
+            </form>
         </div>
     </div>
 
