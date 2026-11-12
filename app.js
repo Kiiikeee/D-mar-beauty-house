@@ -1289,7 +1289,7 @@ window.generarPDFCierreMensualPermanente = () => {
             formatearQ(c.saldoPendiente)
         ]);
 
-        // BALANCE NETO FINAL: Ingresos Brutos menos Gastos y menos Comisiones de Estilistas (Las cuentas por cobrar no alteran esta caja)
+        // BALANCE NETO FINAL: Ingresos Brutos menos Gastos y menos Comisiones de Estilistas
         const balanceNetoFinal = totalIngresosBrutos - totalGastos - totalComisionesEstilistas;
 
         docPdf.setFont('helvetica', 'bold');
