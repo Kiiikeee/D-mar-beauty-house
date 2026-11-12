@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>D'Mar Style Salón - Sistema de Gestión</title>
-    <!-- Estilos CSS -->
+    <!-- Estilos CSS enlazados correctamente -->
     <link rel="stylesheet" href="style.css">
     <!-- Librería jsPDF y autoTable para la generación de PDFs -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
@@ -12,29 +12,23 @@
 </head>
 <body class="theme-ficha">
 
-    <!-- OVERLAY PARA MENÚ MÓVIL -->
     <div id="sidebar-overlay" onclick="toggleMenu()"></div>
-
-    <!-- CONTENEDOR DE TOASTS / NOTIFICACIONES FLOTANTES -->
     <div id="toast-container"></div>
 
-    <!-- HEADER SUPERIOR -->
     <header class="app-header">
         <div class="header-left">
             <button class="menu-toggle-btn" onclick="toggleMenu()">☰</button>
             <h1 id="header-seccion-titulo">Ficha de Atención de Salón</h1>
         </div>
         <div class="header-right">
-            <!-- BOTÓN DE NOTIFICACIONES (CAMPANITA) -->
             <button class="bell-btn" onclick="abrirModalChangelog()" title="Novedades y Actualizaciones">
                 🔔
                 <span class="bell-badge" style="display: block;"></span>
             </button>
-            <button class="btn-gasto-header" onclick="abrirModalGasto(event)" title="Registrar Gasto o Salida de Dinero">💸 Gasto</button>
+            <button class="btn-gasto-header" onclick="abrirModalGasto(event)" title="Registrar Gasto">💸 Gasto</button>
         </div>
     </header>
 
-    <!-- MENÚ LATERAL (SIDEBAR) -->
     <aside class="app-sidebar" id="sidebar">
         <div class="sidebar-brand">
             <h2>D'Mar Style</h2>
@@ -53,46 +47,24 @@
         </nav>
     </aside>
 
-    <!-- CONTENEDOR PRINCIPAL -->
     <main class="app-main">
-
-        <!-- 1. SECCIÓN FICHA DE ATENCIÓN (POS) -->
         <section id="seccion-ficha" class="seccion-contenido">
             <div class="card-glass">
                 <h2>Nueva Ficha de Atención / Venta</h2>
                 <div class="form-grid" style="margin-top: 15px;">
-                    <div class="form-group">
-                        <label>Nombre de la Clienta</label>
-                        <input type="text" id="pos-cliente" placeholder="EJ: MARIA LOPEZ" style="text-transform: uppercase;">
-                    </div>
-                    <div class="form-group">
-                        <label>Estilista por Defecto</label>
-                        <input type="text" id="pos-estilista-defecto" placeholder="EJ: OLGA O KEYLA" style="text-transform: uppercase;" value="GENERAL">
-                    </div>
-                    <div class="form-group">
-                        <label>Método de Pago</label>
-                        <select id="pos-metodo-pago">
-                            <option value="Efectivo">Efectivo</option>
-                            <option value="Transferencia / Tarjeta">Transferencia / Tarjeta</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label>Estado de Pago</label>
-                        <select id="pos-estado-pago" onchange="toggleCamposAbonoPOS()">
-                            <option value="COMPLETO">Pagado Completo</option>
-                            <option value="CREDITO">Crédito / Fiado (Parcial)</option>
-                        </select>
-                    </div>
+                    <div class="form-group"><label>Nombre de la Clienta</label><input type="text" id="pos-cliente" placeholder="EJ: MARIA LOPEZ" style="text-transform: uppercase;"></div>
+                    <div class="form-group"><label>Estilista por Defecto</label><input type="text" id="pos-estilista-defecto" placeholder="EJ: OLGA O KEYLA" style="text-transform: uppercase;" value="GENERAL"></div>
+                    <div class="form-group"><label>Método de Pago</label><select id="pos-metodo-pago"><option value="Efectivo">Efectivo</option><option value="Transferencia / Tarjeta">Transferencia / Tarjeta</option></select></div>
+                    <div class="form-group"><label>Estado de Pago</label><select id="pos-estado-pago" onchange="toggleCamposAbonoPOS()"><option value="COMPLETO">Pagado Completo</option><option value="CREDITO">Crédito / Fiado (Parcial)</option></select></div>
                 </div>
 
-                <!-- CONTENEDOR DINÁMICO DE CRÉDITO Y ABONO -->
                 <div id="contenedor-pos-abono" style="display: none; margin-top: 15px; padding: 12px; background: rgba(239,83,80,0.1); border: 1px dashed #ef5350; border-radius: 8px;">
                     <div class="form-group" style="margin-bottom: 10px;">
                         <label style="color: #ef5350; font-weight: bold;">Monto Abonado Hoy (Q)</label>
                         <input type="number" step="0.01" id="pos-monto-abono" placeholder="0.00" oninput="actualizarSumaDinamicaPOS()">
                     </div>
                     <div id="contenedor-items-pendientes-checkbox" style="margin-top: 10px;">
-                        <label style="font-size: 0.85rem; color: #ff8a80; font-weight: bold; display: block; margin-bottom: 5px;">Seleccione los ítems que quedan debiendo (Saldo Pendiente):</label>
+                        <label style="font-size: 0.85rem; color: #ff8a80; font-weight: bold; display: block; margin-bottom: 5px;">Seleccione los ítems que quedan debiendo:</label>
                         <div id="lista-checkboxes-pendientes" style="display: flex; flex-direction: column; gap: 6px; max-height: 120px; overflow-y: auto; padding: 6px; background: rgba(0,0,0,0.3); border-radius: 6px;"></div>
                     </div>
                 </div>
@@ -104,20 +76,8 @@
 
                 <div class="table-responsive" style="margin-top: 20px;">
                     <table>
-                        <thead>
-                            <tr>
-                                <th>Tipo</th>
-                                <th>Concepto</th>
-                                <th>Estilista</th>
-                                <th style="text-align: center;">Cant.</th>
-                                <th style="text-align: center;">Precio U.</th>
-                                <th style="text-align: center;">Subtotal</th>
-                                <th style="text-align: center;">Acción</th>
-                            </tr>
-                        </thead>
-                        <tbody id="tabla-pos-items">
-                            <tr><td colspan="7" style="text-align: center; color: #888;">No ha agregado ningún trabajo o producto a esta ficha.</td></tr>
-                        </tbody>
+                        <thead><tr><th>Tipo</th><th>Concepto</th><th>Estilista</th><th style="text-align: center;">Cant.</th><th style="text-align: center;">Precio U.</th><th style="text-align: center;">Subtotal</th><th style="text-align: center;">Acción</th></tr></thead>
+                        <tbody id="tabla-pos-items"><tr><td colspan="7" style="text-align: center; color: #888;">No ha agregado ningún trabajo o producto a esta ficha.</td></tr></tbody>
                     </table>
                 </div>
 
@@ -132,36 +92,19 @@
             </div>
         </section>
 
-        <!-- 2. SECCIÓN HISTORIAL DE RECIBOS -->
         <section id="seccion-recibos" class="seccion-contenido" style="display: none;">
             <div class="card-glass">
                 <h2>Historial de Comprobantes de Salón</h2>
-                <div class="form-group" style="margin-top: 15px;">
-                    <input type="text" id="buscador-recibos" placeholder="🔍 Buscar por nombre de clienta o número de recibo..." style="text-transform: uppercase;">
-                </div>
+                <div class="form-group" style="margin-top: 15px;"><input type="text" id="buscador-recibos" placeholder="🔍 Buscar por nombre de clienta o número de recibo..." style="text-transform: uppercase;"></div>
                 <div class="table-responsive" style="margin-top: 15px;">
                     <table>
-                        <thead>
-                            <tr>
-                                <th>No. Recibo</th>
-                                <th>Fecha</th>
-                                <th>Clienta</th>
-                                <th>Resumen de Ítems</th>
-                                <th style="text-align: center;">Método</th>
-                                <th style="text-align: center;">Total</th>
-                                <th style="text-align: center;">Estado</th>
-                                <th style="text-align: center;">Acciones</th>
-                            </tr>
-                        </thead>
-                        <tbody id="tabla-recibos-historial">
-                            <tr><td colspan="8" style="text-align: center; color: #888;">No hay comprobantes guardados.</td></tr>
-                        </tbody>
+                        <thead><tr><th>No. Recibo</th><th>Fecha</th><th>Clienta</th><th>Resumen de Ítems</th><th style="text-align: center;">Método</th><th style="text-align: center;">Total</th><th style="text-align: center;">Estado</th><th style="text-align: center;">Acciones</th></tr></thead>
+                        <tbody id="tabla-recibos-historial"><tr><td colspan="8" style="text-align: center; color: #888;">No hay comprobantes guardados.</td></tr></tbody>
                     </table>
                 </div>
             </div>
         </section>
 
-        <!-- 3. SECCIÓN INVENTARIO DE PRODUCTOS -->
         <section id="seccion-inventario" class="seccion-contenido" style="display: none;">
             <div class="card-glass">
                 <h2>Gestión de Inventario de Productos</h2>
@@ -169,213 +112,97 @@
                     <strong style="color: #ef5350;">⚠️ Alerta de Stock Agotado:</strong>
                     <div id="lista-alertas" style="margin-top: 5px; display: flex; flex-direction: column; gap: 4px;"></div>
                 </div>
-
                 <form id="form-producto" class="form-grid" style="margin-top: 15px;">
-                    <div class="form-group">
-                        <label>Código</label>
-                        <input type="text" id="codigo-prod" required placeholder="EJ: P01" style="text-transform: uppercase;">
-                    </div>
-                    <div class="form-group">
-                        <label>Nombre del Producto</label>
-                        <input type="text" id="nombre-prod" required placeholder="EJ: SPRAY FIJADOR" style="text-transform: uppercase;">
-                    </div>
-                    <div class="form-group">
-                        <label>Precio Venta (Q)</label>
-                        <input type="number" step="0.01" id="precio-prod" required placeholder="0.00">
-                    </div>
-                    <div class="form-group">
-                        <label>Stock Inicial</label>
-                        <input type="number" id="stock-prod" required placeholder="10">
-                    </div>
-                    <div class="form-group" style="display: flex; align-items: flex-end;">
-                        <button type="submit" class="btn-primary" style="width: 100%;">+ Registrar Producto</button>
-                    </div>
+                    <div class="form-group"><label>Código</label><input type="text" id="codigo-prod" required placeholder="EJ: P01" style="text-transform: uppercase;"></div>
+                    <div class="form-group"><label>Nombre del Producto</label><input type="text" id="nombre-prod" required placeholder="EJ: SPRAY FIJADOR" style="text-transform: uppercase;"></div>
+                    <div class="form-group"><label>Precio Venta (Q)</label><input type="number" step="0.01" id="precio-prod" required placeholder="0.00"></div>
+                    <div class="form-group"><label>Stock Inicial</label><input type="number" id="stock-prod" required placeholder="10"></div>
+                    <div class="form-group" style="display: flex; align-items: flex-end;"><button type="submit" class="btn-primary" style="width: 100%;">+ Registrar Producto</button></div>
                 </form>
-
-                <div class="form-group" style="margin-top: 25px;">
-                    <input type="text" id="buscador-productos" placeholder="🔍 Buscar producto por nombre o código..." style="text-transform: uppercase;">
-                </div>
-
+                <div class="form-group" style="margin-top: 25px;"><input type="text" id="buscador-productos" placeholder="🔍 Buscar producto por nombre o código..." style="text-transform: uppercase;"></div>
                 <div class="table-responsive" style="margin-top: 15px;">
                     <table>
-                        <thead>
-                            <tr>
-                                <th>Código</th>
-                                <th>Nombre</th>
-                                <th style="text-align: center;">Precio (Q)</th>
-                                <th style="text-align: center;">Stock</th>
-                                <th style="text-align: center;">Acciones</th>
-                            </tr>
-                        </thead>
-                        <tbody id="tabla-productos">
-                            <tr><td colspan="5" style="text-align: center; color: #888;">Cargando inventario...</td></tr>
-                        </tbody>
+                        <thead><tr><th>Código</th><th>Nombre</th><th style="text-align: center;">Precio (Q)</th><th style="text-align: center;">Stock</th><th style="text-align: center;">Acciones</th></tr></thead>
+                        <tbody id="tabla-productos"><tr><td colspan="5" style="text-align: center; color: #888;">Cargando inventario...</td></tr></tbody>
                     </table>
                 </div>
             </div>
         </section>
 
-        <!-- 4. SECCIÓN CATÁLOGO DE SERVICIOS -->
         <section id="seccion-servicios" class="seccion-contenido" style="display: none;">
             <div class="card-glass">
                 <h2>Catálogo de Servicios de Salón</h2>
                 <form id="form-servicio" class="form-grid" style="margin-top: 15px;">
-                    <div class="form-group" style="grid-column: span 2;">
-                        <label>Nombre del Servicio</label>
-                        <input type="text" id="nombre-serv" required placeholder="EJ: PEDICURA SPA" style="text-transform: uppercase;">
-                    </div>
-                    <div class="form-group">
-                        <label>Precio Base (Q)</label>
-                        <input type="number" step="0.01" id="precio-serv" required placeholder="0.00">
-                    </div>
-                    <div class="form-group" style="display: flex; align-items: flex-end;">
-                        <button type="submit" class="btn-primary" style="width: 100%;">+ Registrar Servicio</button>
-                    </div>
+                    <div class="form-group" style="grid-column: span 2;"><label>Nombre del Servicio</label><input type="text" id="nombre-serv" required placeholder="EJ: PEDICURA SPA" style="text-transform: uppercase;"></div>
+                    <div class="form-group"><label>Precio Base (Q)</label><input type="number" step="0.01" id="precio-serv" required placeholder="0.00"></div>
+                    <div class="form-group" style="display: flex; align-items: flex-end;"><button type="submit" class="btn-primary" style="width: 100%;">+ Registrar Servicio</button></div>
                 </form>
-
-                <div class="form-group" style="margin-top: 25px;">
-                    <input type="text" id="buscador-servicios" placeholder="🔍 Buscar servicio en el catálogo..." style="text-transform: uppercase;">
-                </div>
-
+                <div class="form-group" style="margin-top: 25px;"><input type="text" id="buscador-servicios" placeholder="🔍 Buscar servicio en el catálogo..." style="text-transform: uppercase;"></div>
                 <div class="table-responsive" style="margin-top: 15px;">
                     <table>
-                        <thead>
-                            <tr>
-                                <th>Nombre del Servicio</th>
-                                <th style="text-align: center;">Precio (Q)</th>
-                                <th style="text-align: center;">Acciones</th>
-                            </tr>
-                        </thead>
-                        <tbody id="tabla-servicios">
-                            <tr><td colspan="3" style="text-align: center; color: #888;">Cargando servicios...</td></tr>
-                        </tbody>
+                        <thead><tr><th>Nombre del Servicio</th><th style="text-align: center;">Precio (Q)</th><th style="text-align: center;">Acciones</th></tr></thead>
+                        <tbody id="tabla-servicios"><tr><td colspan="3" style="text-align: center; color: #888;">Cargando servicios...</td></tr></tbody>
                     </table>
                 </div>
             </div>
         </section>
 
-        <!-- 5. SECCIÓN CONTROL DE ESTILISTAS -->
         <section id="seccion-estilistas" class="seccion-contenido" style="display: none;">
             <div class="card-glass">
                 <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px;">
                     <h2>Control de Estilistas & Comisiones (30%)</h2>
                     <button class="btn-danger" onclick="procesarCierreMensualComisiones()">🔒 Realizar Cierre de Comisiones & PDF</button>
                 </div>
-
                 <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-top: 20px;">
-                    <div class="stat-card">
-                        <h3>Total Servicios Realizados</h3>
-                        <p id="stat-estilistas-total-servicios" style="color: var(--accent-color);">Q0.00</p>
-                    </div>
-                    <div class="stat-card">
-                        <h3>Total Acumulado Comisiones (30%)</h3>
-                        <p id="stat-estilistas-total-comision" style="color: #ffb74d;">Q0.00</p>
-                    </div>
-                    <div class="stat-card">
-                        <h3>Cantidad de Trabajos</h3>
-                        <p id="stat-estilistas-conteo">0</p>
-                    </div>
+                    <div class="stat-card"><h3>Total Servicios Realizados</h3><p id="stat-estilistas-total-servicios" style="color: var(--accent-color);">Q0.00</p></div>
+                    <div class="stat-card"><h3>Total Acumulado Comisiones (30%)</h3><p id="stat-estilistas-total-comision" style="color: #ffb74d;">Q0.00</p></div>
+                    <div class="stat-card"><h3>Cantidad de Trabajos</h3><p id="stat-estilistas-conteo">0</p></div>
                 </div>
-
                 <div id="contenedor-resumen-estilistas" style="margin-top: 25px;"></div>
-
                 <h3 style="margin-top: 30px; font-size: 1.1rem; color: var(--accent-color);">Detalle de Servicios por Estilista</h3>
                 <div class="table-responsive" style="margin-top: 10px;">
                     <table>
-                        <thead>
-                            <tr>
-                                <th>Fecha</th>
-                                <th>Estilista</th>
-                                <th>Servicio</th>
-                                <th>Clienta</th>
-                                <th style="text-align: center;">Precio Total</th>
-                                <th style="text-align: center;">Comisión (30%)</th>
-                            </tr>
-                        </thead>
-                        <tbody id="tabla-estilistas-detalles">
-                            <tr><td colspan="6" style="text-align: center; color: #888;">No hay comisiones registradas en este periodo.</td></tr>
-                        </tbody>
+                        <thead><tr><th>Fecha</th><th>Estilista</th><th>Servicio</th><th>Clienta</th><th style="text-align: center;">Precio Total</th><th style="text-align: center;">Comisión (30%)</th></tr></thead>
+                        <tbody id="tabla-estilistas-detalles"><tr><td colspan="6" style="text-align: center; color: #888;">No hay comisiones registradas en este periodo.</td></tr></tbody>
                     </table>
                 </div>
             </div>
         </section>
 
-        <!-- 6. SECCIÓN CONTROL DE PAGOS & CRÉDITOS -->
         <section id="seccion-pagos" class="seccion-contenido" style="display: none;">
             <div class="card-glass">
                 <h2>Control de Pagos & Créditos (Cuentas por Cobrar)</h2>
-                <div class="form-group" style="margin-top: 15px;">
-                    <input type="text" id="buscador-pagos" placeholder="🔍 Buscar por nombre de clienta..." style="text-transform: uppercase;">
-                </div>
+                <div class="form-group" style="margin-top: 15px;"><input type="text" id="buscador-pagos" placeholder="🔍 Buscar por nombre de clienta..." style="text-transform: uppercase;"></div>
                 <div class="table-responsive" style="margin-top: 15px;">
                     <table>
-                        <thead>
-                            <tr>
-                                <th>Clienta</th>
-                                <th>Fecha</th>
-                                <th>Detalle / Ítems</th>
-                                <th style="text-align: center;">Monto Total</th>
-                                <th style="text-align: center;">Abonado</th>
-                                <th style="text-align: center;">Saldo Pendiente</th>
-                                <th style="text-align: center;">Estado</th>
-                                <th style="text-align: center;">Acción</th>
-                            </tr>
-                        </thead>
-                        <tbody id="tabla-pagos">
-                            <tr><td colspan="8" style="text-align: center; color: #888;">No hay saldos pendientes registrados.</td></tr>
-                        </tbody>
+                        <thead><tr><th>Clienta</th><th>Fecha</th><th>Detalle / Ítems</th><th style="text-align: center;">Monto Total</th><th style="text-align: center;">Abonado</th><th style="text-align: center;">Saldo Pendiente</th><th style="text-align: center;">Estado</th><th style="text-align: center;">Acción</th></tr></thead>
+                        <tbody id="tabla-pagos"><tr><td colspan="8" style="text-align: center; color: #888;">No hay saldos pendientes registrados.</td></tr></tbody>
                     </table>
                 </div>
             </div>
         </section>
 
-        <!-- 7. SECCIÓN HISTORIAL DIARIO & CIERRE -->
         <section id="seccion-reportes" class="seccion-contenido" style="display: none;">
             <div class="card-glass">
                 <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px;">
                     <h2>Historial Diario & Cierre de Caja</h2>
                     <button class="btn-success" onclick="procesarCierreCaja()">🔒 Realizar Cierre Diario & PDF</button>
                 </div>
-
                 <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-top: 20px;">
-                    <div class="stat-card">
-                        <h3>Ingresos Brutos</h3>
-                        <p id="stat-total-ventas" style="color: var(--accent-color);">Q0.00</p>
-                    </div>
-                    <div class="stat-card">
-                        <h3>Efectivo Neto en Caja</h3>
-                        <p id="stat-efectivo" style="color: #81c784;">Q0.00</p>
-                    </div>
-                    <div class="stat-card">
-                        <h3>Pagos Digitales</h3>
-                        <p id="stat-digital" style="color: #64b5f6;">Q0.00</p>
-                    </div>
-                    <div class="stat-card">
-                        <h3>Gastos / Salidas</h3>
-                        <p id="stat-gastos" style="color: #ef5350;">Q0.00</p>
-                    </div>
+                    <div class="stat-card"><h3>Ingresos Brutos</h3><p id="stat-total-ventas" style="color: var(--accent-color);">Q0.00</p></div>
+                    <div class="stat-card"><h3>Efectivo Neto en Caja</h3><p id="stat-efectivo" style="color: #81c784;">Q0.00</p></div>
+                    <div class="stat-card"><h3>Pagos Digitales</h3><p id="stat-digital" style="color: #64b5f6;">Q0.00</p></div>
+                    <div class="stat-card"><h3>Gastos / Salidas</h3><p id="stat-gastos" style="color: #ef5350;">Q0.00</p></div>
                 </div>
-
                 <div class="table-responsive" style="margin-top: 25px;">
                     <table>
-                        <thead>
-                            <tr>
-                                <th>Fecha y Hora</th>
-                                <th>Concepto / Trabajo</th>
-                                <th>Clienta</th>
-                                <th>Monto</th>
-                                <th>Método / Origen</th>
-                            </tr>
-                        </thead>
-                        <tbody id="tabla-ventas-historial">
-                            <tr><td colspan="5" style="text-align: center; color: #888;">No hay movimientos registrados hoy.</td></tr>
-                        </tbody>
+                        <thead><tr><th>Fecha y Hora</th><th>Concepto / Trabajo</th><th>Clienta</th><th>Monto</th><th>Método / Origen</th></tr></thead>
+                        <tbody id="tabla-ventas-historial"><tr><td colspan="5" style="text-align: center; color: #888;">No hay movimientos registrados hoy.</td></tr></tbody>
                     </table>
                 </div>
             </div>
         </section>
 
-        <!-- 8. SECCIÓN HISTORIAL MENSUAL PERMANENTE -->
         <section id="seccion-permanente" class="seccion-contenido" style="display: none;">
             <div class="card-glass">
                 <h2>Historial Mensual Permanente & Cierre Avanzado</h2>
@@ -391,146 +218,79 @@
                             <option value="MARZO 2027">Marzo 2027</option>
                         </select>
                     </div>
-                    <div class="form-group">
-                        <button class="btn-primary" onclick="generarPDFCierreMensualPermanente()" style="width: 100%;">📥 Descargar PDF Cierre Mensual Avanzado</button>
-                    </div>
+                    <div class="form-group"><button class="btn-primary" onclick="generarPDFCierreMensualPermanente()" style="width: 100%;">📥 Descargar PDF Cierre Mensual Avanzado</button></div>
                 </div>
-
-                <div class="form-group" style="margin-top: 25px;">
-                    <input type="text" id="buscador-permanente" placeholder="🔍 Buscar en el historial permanente (concepto, clienta, fecha)..." style="text-transform: uppercase;">
-                </div>
-
+                <div class="form-group" style="margin-top: 25px;"><input type="text" id="buscador-permanente" placeholder="🔍 Buscar en el historial permanente..." style="text-transform: uppercase;"></div>
                 <div id="contenedor-historial-permanente" style="margin-top: 15px;"></div>
             </div>
         </section>
 
-        <!-- 9. SECCIÓN ANULACIÓN & CORRECCIONES -->
         <section id="seccion-correcciones" class="seccion-contenido" style="display: none;">
             <div class="card-glass">
                 <h2>Anulación & Corrección de Registros</h2>
-                <p style="font-size: 0.85rem; color: var(--text-muted); margin-top: 5px;">Si cometió un error en un registro o cobro, puede anularlo por completo aquí para que se remueva de todos los historiales y se devuelva el stock de productos automáticamente.</p>
-                
-                <div class="form-group" style="margin-top: 15px;">
-                    <input type="text" id="buscador-correcciones" placeholder="🔍 Buscar registro a corregir..." style="text-transform: uppercase;">
-                </div>
-
+                <p style="font-size: 0.85rem; color: var(--text-muted); margin-top: 5px;">Si cometió un error, puede anularlo por completo aquí para removerlo y devolver el stock automáticamente.</p>
+                <div class="form-group" style="margin-top: 15px;"><input type="text" id="buscador-correcciones" placeholder="🔍 Buscar registro a corregir..." style="text-transform: uppercase;"></div>
                 <div class="table-responsive" style="margin-top: 15px;">
                     <table>
-                        <thead>
-                            <tr>
-                                <th>Fecha</th>
-                                <th>Tipo</th>
-                                <th>Concepto</th>
-                                <th>Clienta</th>
-                                <th style="text-align: center;">Monto</th>
-                                <th style="text-align: center;">Acción</th>
-                            </tr>
-                        </thead>
-                        <tbody id="tabla-correcciones">
-                            <tr><td colspan="6" style="text-align: center; color: #888;">No hay registros para corregir.</td></tr>
-                        </tbody>
+                        <thead><tr><th>Fecha</th><th>Tipo</th><th>Concepto</th><th>Clienta</th><th style="text-align: center;">Monto</th><th style="text-align: center;">Acción</th></tr></thead>
+                        <tbody id="tabla-correcciones"><tr><td colspan="6" style="text-align: center; color: #888;">No hay registros para corregir.</td></tr></tbody>
                     </table>
                 </div>
             </div>
         </section>
-
     </main>
 
-    <!-- MODAL DE GASTOS / SALIDAS -->
+    <!-- MODALES -->
     <div id="modal-gasto" class="modal-overlay" style="display: none;">
         <div class="modal-card">
             <h3>💸 Registrar Gasto o Salida de Dinero</h3>
             <form id="form-gasto" style="margin-top: 15px;">
-                <div class="form-group" style="margin-bottom: 12px;">
-                    <label>Concepto del Gasto</label>
-                    <input type="text" id="gasto-concepto" required placeholder="EJ: COMPRA DE TOALLAS O MATERIAL" style="text-transform: uppercase;">
-                </div>
-                <div class="form-group" style="margin-bottom: 12px;">
-                    <label>Monto (Q)</label>
-                    <input type="number" step="0.01" id="gasto-monto" required placeholder="0.00">
-                </div>
-                <div class="form-group" style="margin-bottom: 15px;">
-                    <label>Origen del Dinero</label>
-                    <select id="gasto-origen">
-                        <option value="Efectivo">Efectivo en Caja</option>
-                        <option value="Transferencia / Tarjeta">Cuenta Digital / Banco</option>
-                    </select>
-                </div>
-                <div style="display: flex; gap: 10px; justify-content: flex-end;">
-                    <button type="button" class="btn-secondary" onclick="cerrarModalGasto(event)">Cancelar</button>
-                    <button type="submit" class="btn-primary">Registrar Gasto</button>
-                </div>
+                <div class="form-group" style="margin-bottom: 12px;"><label>Concepto del Gasto</label><input type="text" id="gasto-concepto" required placeholder="EJ: COMPRA" style="text-transform: uppercase;"></div>
+                <div class="form-group" style="margin-bottom: 12px;"><label>Monto (Q)</label><input type="number" step="0.01" id="gasto-monto" required placeholder="0.00"></div>
+                <div class="form-group" style="margin-bottom: 15px;"><label>Origen del Dinero</label><select id="gasto-origen"><option value="Efectivo">Efectivo en Caja</option><option value="Transferencia / Tarjeta">Cuenta Digital / Banco</option></select></div>
+                <div style="display: flex; gap: 10px; justify-content: flex-end;"><button type="button" class="btn-secondary" onclick="cerrarModalGasto(event)">Cancelar</button><button type="submit" class="btn-primary">Registrar Gasto</button></div>
             </form>
         </div>
     </div>
 
-    <!-- MODAL DE ABONOS A DEUDAS -->
     <div id="modal-abono" class="modal-overlay" style="display: none;">
         <div class="modal-card">
             <h3>💵 Registrar Abono o Pago de Deuda</h3>
             <p id="abono-cliente-nombre" style="font-size: 0.9rem; color: var(--accent-color); margin-top: 5px;"></p>
             <form id="form-abono" style="margin-top: 15px;">
                 <input type="hidden" id="abono-pago-id">
-                <div class="form-group" style="margin-bottom: 12px;">
-                    <label>Monto a Abonar (Q)</label>
-                    <input type="number" step="0.01" id="abono-monto-ingresado" required placeholder="0.00">
-                </div>
-                <div class="form-group" style="margin-bottom: 15px;">
-                    <label>Método de Pago del Abono</label>
-                    <select id="abono-metodo">
-                        <option value="Efectivo">Efectivo</option>
-                        <option value="Transferencia / Tarjeta">Transferencia / Tarjeta</option>
-                    </select>
-                </div>
-                <div style="display: flex; gap: 10px; justify-content: flex-end;">
-                    <button type="button" class="btn-secondary" onclick="cerrarModalAbono(event)">Cancelar</button>
-                    <button type="submit" class="btn-primary">Guardar Abono</button>
-                </div>
+                <div class="form-group" style="margin-bottom: 12px;"><label>Monto a Abonar (Q)</label><input type="number" step="0.01" id="abono-monto-ingresado" required placeholder="0.00"></div>
+                <div class="form-group" style="margin-bottom: 15px;"><label>Método de Pago del Abono</label><select id="abono-metodo"><option value="Efectivo">Efectivo</option><option value="Transferencia / Tarjeta">Transferencia / Tarjeta</option></select></div>
+                <div style="display: flex; gap: 10px; justify-content: flex-end;"><button type="button" class="btn-secondary" onclick="cerrarModalAbono(event)">Cancelar</button><button type="submit" class="btn-primary">Guardar Abono</button></div>
             </form>
         </div>
     </div>
 
-    <!-- MODAL DE DETALLE DE RECIBO -->
     <div id="modal-ver-recibo" class="modal-overlay" style="display: none;">
         <div class="modal-card" style="max-width: 600px;">
             <h3 id="ver-recibo-titulo">Comprobante</h3>
             <p id="ver-recibo-sub" style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 10px;"></p>
             <div class="table-responsive" style="max-height: 250px; overflow-y: auto;">
                 <table>
-                    <thead>
-                        <tr>
-                            <th>Tipo</th>
-                            <th>Concepto</th>
-                            <th>Estilista</th>
-                            <th style="text-align: center;">Subtotal</th>
-                        </tr>
-                    </thead>
+                    <thead><tr><th>Tipo</th><th>Concepto</th><th>Estilista</th><th style="text-align: center;">Subtotal</th></tr></thead>
                     <tbody id="ver-recibo-items"></tbody>
                 </table>
             </div>
             <div style="margin-top: 15px; display: flex; justify-content: space-between; align-items: center;">
                 <p style="font-size: 1rem;">Total: <strong id="ver-recibo-total" style="color: var(--accent-color);">Q0.00</strong></p>
-                <div style="display: flex; gap: 10px;">
-                    <button id="btn-reimprimir-recibo" class="btn-primary">📥 Descargar PDF</button>
-                    <button class="btn-secondary" onclick="cerrarModalVerRecibo(event)">Cerrar</button>
-                </div>
+                <div style="display: flex; gap: 10px;"><button id="btn-reimprimir-recibo" class="btn-primary">📥 Descargar PDF</button><button class="btn-secondary" onclick="cerrarModalVerRecibo(event)">Cerrar</button></div>
             </div>
         </div>
     </div>
 
-    <!-- MODAL DE CONFIRMACIÓN -->
     <div id="modal-confirm" class="modal-overlay" style="display: none;">
         <div class="modal-card" style="text-align: center; max-width: 400px;">
             <h3>⚠️ Confirmación</h3>
             <p id="confirm-mensaje" style="margin: 15px 0; color: #f5f5f7;"></p>
-            <div style="display: flex; gap: 10px; justify-content: center;">
-                <button id="btn-confirm-cancel" class="btn-secondary">Cancelar</button>
-                <button id="btn-confirm-ok" class="btn-danger">Sí, Confirmar</button>
-            </div>
+            <div style="display: flex; gap: 10px; justify-content: center;"><button id="btn-confirm-cancel" class="btn-secondary">Cancelar</button><button id="btn-confirm-ok" class="btn-danger">Sí, Confirmar</button></div>
         </div>
     </div>
 
-    <!-- MODAL DE EDICIÓN DE PRODUCTO -->
     <div id="modal-edicion" class="modal-overlay" style="display: none;">
         <div class="modal-card">
             <h3>✏️ Editar Producto</h3>
@@ -540,15 +300,11 @@
                 <div class="form-group" style="margin-bottom: 10px;"><label>Nombre</label><input type="text" id="edit-nombre" required style="text-transform: uppercase;"></div>
                 <div class="form-group" style="margin-bottom: 10px;"><label>Precio (Q)</label><input type="number" step="0.01" id="edit-precio" required></div>
                 <div class="form-group" style="margin-bottom: 15px;"><label>Stock</label><input type="number" id="edit-stock" required></div>
-                <div style="display: flex; gap: 10px; justify-content: flex-end;">
-                    <button type="button" class="btn-secondary" onclick="cerrarModalEdicion(event)">Cancelar</button>
-                    <button type="submit" class="btn-primary">Actualizar</button>
-                </div>
+                <div style="display: flex; gap: 10px; justify-content: flex-end;"><button type="button" class="btn-secondary" onclick="cerrarModalEdicion(event)">Cancelar</button><button type="submit" class="btn-primary">Actualizar</button></div>
             </form>
         </div>
     </div>
 
-    <!-- MODAL DE EDICIÓN DE SERVICIO -->
     <div id="modal-edicion-servicio" class="modal-overlay" style="display: none;">
         <div class="modal-card">
             <h3>✏️ Editar Servicio</h3>
@@ -556,67 +312,35 @@
                 <input type="hidden" id="edit-serv-id">
                 <div class="form-group" style="margin-bottom: 10px;"><label>Nombre del Servicio</label><input type="text" id="edit-serv-nombre" required style="text-transform: uppercase;"></div>
                 <div class="form-group" style="margin-bottom: 15px;"><label>Precio (Q)</label><input type="number" step="0.01" id="edit-serv-precio" required></div>
-                <div style="display: flex; gap: 10px; justify-content: flex-end;">
-                    <button type="button" class="btn-secondary" onclick="cerrarModalEdicionServicio(event)">Cancelar</button>
-                    <button type="submit" class="btn-primary">Actualizar</button>
-                </div>
+                <div style="display: flex; gap: 10px; justify-content: flex-end;"><button type="button" class="btn-secondary" onclick="cerrarModalEdicionServicio(event)">Cancelar</button><button type="submit" class="btn-primary">Actualizar</button></div>
             </form>
         </div>
     </div>
 
-    <!-- MODAL AGREGAR SERVICIO A FICHA -->
     <div id="modal-pos-servicio" class="modal-overlay" style="display: none;">
         <div class="modal-card">
             <h3>✨ Agregar Servicio a la Ficha</h3>
             <form id="form-pos-servicio" style="margin-top: 15px;">
-                <div class="form-group" style="margin-bottom: 10px;">
-                    <label>Seleccionar o Escribir Servicio</label>
-                    <input type="text" id="pos-input-servicio" list="lista-servicios-datalist" required placeholder="Escriba el servicio..." style="text-transform: uppercase;">
-                    <datalist id="lista-servicios-datalist"></datalist>
-                </div>
-                <div class="form-group" style="margin-bottom: 10px;">
-                    <label>Estilista Responsable</label>
-                    <input type="text" id="pos-item-estilista" required placeholder="EJ: OLGA" style="text-transform: uppercase;" value="GENERAL">
-                </div>
-                <div class="form-group" style="margin-bottom: 15px;">
-                    <label>Precio (Q)</label>
-                    <input type="number" step="0.01" id="pos-item-precio-serv" required placeholder="0.00">
-                </div>
-                <div style="display: flex; gap: 10px; justify-content: flex-end;">
-                    <button type="button" class="btn-secondary" onclick="cerrarModalAgregarServicioPOS(event)">Cancelar</button>
-                    <button type="submit" class="btn-primary">Agregar</button>
-                </div>
+                <div class="form-group" style="margin-bottom: 10px;"><label>Servicio</label><input type="text" id="pos-input-servicio" list="lista-servicios-datalist" required placeholder="Escriba..." style="text-transform: uppercase;"><datalist id="lista-servicios-datalist"></datalist></div>
+                <div class="form-group" style="margin-bottom: 10px;"><label>Estilista</label><input type="text" id="pos-item-estilista" required placeholder="OLGA" style="text-transform: uppercase;" value="GENERAL"></div>
+                <div class="form-group" style="margin-bottom: 15px;"><label>Precio (Q)</label><input type="number" step="0.01" id="pos-item-precio-serv" required placeholder="0.00"></div>
+                <div style="display: flex; gap: 10px; justify-content: flex-end;"><button type="button" class="btn-secondary" onclick="cerrarModalAgregarServicioPOS(event)">Cancelar</button><button type="submit" class="btn-primary">Agregar</button></div>
             </form>
         </div>
     </div>
 
-    <!-- MODAL AGREGAR PRODUCTO A FICHA -->
     <div id="modal-pos-producto" class="modal-overlay" style="display: none;">
         <div class="modal-card">
             <h3>📦 Agregar Producto a la Ficha</h3>
             <form id="form-pos-producto" style="margin-top: 15px;">
-                <div class="form-group" style="margin-bottom: 10px;">
-                    <label>Seleccionar o Escribir Producto</label>
-                    <input type="text" id="pos-input-producto" list="lista-productos-datalist" required placeholder="Escriba el producto..." style="text-transform: uppercase;">
-                    <datalist id="lista-productos-datalist"></datalist>
-                </div>
-                <div class="form-group" style="margin-bottom: 10px;">
-                    <label>Cantidad</label>
-                    <input type="number" id="pos-item-cant-prod" required value="1" min="1">
-                </div>
-                <div class="form-group" style="margin-bottom: 15px;">
-                    <label>Subtotal / Precio Total (Q)</label>
-                    <input type="number" step="0.01" id="pos-item-precio-prod" required placeholder="0.00">
-                </div>
-                <div style="display: flex; gap: 10px; justify-content: flex-end;">
-                    <button type="button" class="btn-secondary" onclick="cerrarModalAgregarProductoPOS(event)">Cancelar</button>
-                    <button type="submit" class="btn-primary">Agregar</button>
-                </div>
+                <div class="form-group" style="margin-bottom: 10px;"><label>Producto</label><input type="text" id="pos-input-producto" list="lista-productos-datalist" required placeholder="Escriba..." style="text-transform: uppercase;"><datalist id="lista-productos-datalist"></datalist></div>
+                <div class="form-group" style="margin-bottom: 10px;"><label>Cantidad</label><input type="number" id="pos-item-cant-prod" required value="1" min="1"></div>
+                <div class="form-group" style="margin-bottom: 15px;"><label>Subtotal (Q)</label><input type="number" step="0.01" id="pos-item-precio-prod" required placeholder="0.00"></div>
+                <div style="display: flex; gap: 10px; justify-content: flex-end;"><button type="button" class="btn-secondary" onclick="cerrarModalAgregarProductoPOS(event)">Cancelar</button><button type="submit" class="btn-primary">Agregar</button></div>
             </form>
         </div>
     </div>
 
-    <!-- MODAL DE NOVEDADES Y ACTUALIZACIONES (CHANGELOG / CAMPANITA) -->
     <div id="modal-changelog" class="modal-overlay" style="display: none;">
         <div class="modal-card" style="max-width: 500px;">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
@@ -624,32 +348,18 @@
                 <button onclick="cerrarModalChangelog()" style="background: none; border: none; color: #fff; font-size: 1.2rem; cursor: pointer;">✕</button>
             </div>
             <div style="max-height: 350px; overflow-y: auto; display: flex; flex-direction: column; gap: 12px; padding-right: 5px;">
-                
-                <!-- NOTIFICACIÓN RECIENTE DE SEGURIDAD Y REPORTE -->
                 <div class="changelog-item" style="border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 10px;">
                     <strong style="color: var(--accent-color);">📢 Actualización de Reportes y Seguridad Firebase</strong>
-                    <small style="display: block; color: var(--text-muted); margin-bottom: 4px;">Octubre 2026</small>
+                    <small style="display: block; color: var(--text-muted); margin-bottom: 4px;">Noviembre 2026</small>
                     <p style="font-size: 0.85rem; margin: 0; color: #f5f5f7; line-height: 1.4;">
-                        Se han actualizado las reglas de seguridad en Firebase para garantizar el funcionamiento permanente de la aplicación. Además, en el reporte mensual del Historial Permanente se separaron las <strong>Cuentas por Cobrar (Saldos Pendientes)</strong> en una tabla independiente, ajustando el Balance Neto Final para reflejar de forma exacta las utilidades descontando comisiones y gastos.
+                        Reglas de seguridad de Firebase actualizadas permanentemente. En el reporte mensual se separaron las <strong>Cuentas por Cobrar</strong> en una tabla independiente y el Balance Neto Final calcula exactamente las utilidades descontando comisiones y gastos.
                     </p>
                 </div>
-
-                <div class="changelog-item" style="border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 10px;">
-                    <strong style="color: var(--accent-color);">✨ Sistema Operativo Actualizado</strong>
-                    <small style="display: block; color: var(--text-muted); margin-bottom: 4px;">Septiembre 2026</small>
-                    <p style="font-size: 0.85rem; margin: 0; color: #f5f5f7; line-height: 1.4;">
-                        Módulo POS optimizado con selección de ítems en créditos, control de anulación de registros con devolución automática de inventario y cierre de caja avanzado en PDF.
-                    </p>
-                </div>
-
             </div>
-            <div style="margin-top: 15px; text-align: right;">
-                <button class="btn-primary" onclick="cerrarModalChangelog()" style="padding: 6px 15px;">Entendido</button>
-            </div>
+            <div style="margin-top: 15px; text-align: right;"><button class="btn-primary" onclick="cerrarModalChangelog()" style="padding: 6px 15px;">Entendido</button></div>
         </div>
     </div>
 
-    <!-- Script Principal de la App -->
     <script type="module" src="app.js"></script>
 </body>
 </html>
